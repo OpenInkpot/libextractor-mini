@@ -1,4 +1,3 @@
-
 #include <string.h>
 #include <stdlib.h>
 #include <expat.h>
@@ -8,8 +7,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include "plugin.h"
-
-
 
 char *tolowerstr(const char *instr)
 {
@@ -24,8 +21,8 @@ char *tolowerstr(const char *instr)
     }
     outstr[i]='\0';
     return outstr;
-    
 }
+
 int authorflag;
 int titleflag;
 int titleinfoflag;
@@ -51,9 +48,7 @@ void initvars()
     authorfirst=NULL;
     authormiddle=NULL;
     authorlast=NULL;   
-    
 }
-
 
 void handlestart(void *userData,const XML_Char *name,const XML_Char **atts)
 {
@@ -97,10 +92,8 @@ void handleend(void *userData,const XML_Char *name)
     free(lowname);
 }
 
-
 void handlechar(void *userData,const XML_Char *s,int len)
 {
-    
     char *temp2=(char *)calloc(len+1,sizeof(char));
     
     strncpy(temp2,s,len);
@@ -178,20 +171,9 @@ void handlechar(void *userData,const XML_Char *s,int len)
     }
 }
 
-
-
-
-
-
-
-
 extern "C" plugin_info_t *init()
 {
     plugin_info_t *myinfo;
-    
-    
-    
-    
     
     myinfo=(plugin_info_t *)calloc(1,sizeof(plugin_info_t));
     myinfo->name=(char *)calloc(5,sizeof(char));
@@ -203,15 +185,15 @@ extern "C" plugin_info_t *init()
     
     return myinfo;
 }
+
 extern "C" void fini(plugin_info_t *plugin_info)
 {
-    
     free(plugin_info->name);
     free(plugin_info->exts[0]);
     free(plugin_info->exts);
     free(plugin_info);
-    
 }
+
 extern "C" book_meta_t *parse_meta(const char *filename)
 {
     int filehandle;
@@ -226,16 +208,12 @@ extern "C" book_meta_t *parse_meta(const char *filename)
     XML_SetElementHandler(myparse,handlestart,handleend);
     XML_SetCharacterDataHandler(myparse,handlechar);
     
-    
-    
-    
     filehandle=open(filename,O_RDONLY);
     if(!filehandle)
         return NULL;
     buffer=(char *)calloc(100,sizeof(char));
     while(1)
     {
-        
         if((nread=read(filehandle,(void *)buffer,100*sizeof(char)))<=0)
             doneflag=1;
         
@@ -256,10 +234,10 @@ extern "C" book_meta_t *parse_meta(const char *filename)
         free(title);
     }
     
-    
     if(authorfirst||authormiddle||authorlast)
     {
-        mymeta->author=(char *)calloc((authorfirst?strlen(authorfirst):0) + (authormiddle?(strlen(authormiddle)+1):0) + (authorlast?(strlen(authorlast)+1):0)+1,sizeof(char));
+        mymeta->author=(char *)calloc((authorfirst?strlen(authorfirst):0)
+                                      + (authormiddle?(strlen(authormiddle)+1):0) + (authorlast?(strlen(authorlast)+1):0)+1,sizeof(char));
         
         if(authorfirst)
         {
