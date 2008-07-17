@@ -207,11 +207,11 @@ static EXTRACTOR_KeywordList* add_to_list(EXTRACTOR_KeywordList* next,
                                           EXTRACTOR_KeywordType type,
                                           char* keyword)
 {
-  EXTRACTOR_KeywordList* c = malloc(sizeof(EXTRACTOR_KeywordList));
-  c->keyword = keyword;
-  c->keywordType = type;
-  c->next = next;
-  return c;
+    EXTRACTOR_KeywordList* c = malloc(sizeof(EXTRACTOR_KeywordList));
+    c->keyword = keyword;
+    c->keywordType = type;
+    c->next = next;
+    return c;
 }
 
 static void setup_fb2_parser(XML_Parser myparse)
@@ -260,10 +260,10 @@ static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
 }
 
 EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
-                                             char* data,
-                                             size_t size,
-                                             EXTRACTOR_KeywordList* prev,
-                                             const char* options)
+                                                char* data,
+                                                size_t size,
+                                                EXTRACTOR_KeywordList* prev,
+                                                const char* options)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
 
@@ -323,10 +323,10 @@ err2:
 }
 
 EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
-                                                 char* data,
-                                                 size_t size,
-                                                 EXTRACTOR_KeywordList* prev,
-                                                 const char* options)
+                                                    char* data,
+                                                    size_t size,
+                                                    EXTRACTOR_KeywordList* prev,
+                                                    const char* options)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
 
