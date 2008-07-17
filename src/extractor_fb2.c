@@ -294,7 +294,7 @@ static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
 
     zf = zip_fopen_index(z, 0, 0);
     if(!zf)
-        goto err1;
+        goto err2;
 
     while(!doneflag)
     {
@@ -302,10 +302,10 @@ static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
         int nr = zip_fread(zf, buf, BUF_SIZE);
 
         if(nr == -1)
-            goto err2;
+            goto err1;
 
         if(XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
-            goto err2;
+            goto err1;
 
         if(nr == 0)
             break;
