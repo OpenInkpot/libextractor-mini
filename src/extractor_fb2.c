@@ -273,7 +273,9 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
 
     if(XML_Parse(myparse, data, size, 1) == XML_STATUS_ERROR)
     {
-        printf("%s\n", XML_ErrorString(XML_GetErrorCode(myparse)));
+        /*
+         * Passed file is not a proper fb2.
+         */
         return prev;
     }
 
