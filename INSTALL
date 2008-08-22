@@ -1,1 +1,1 @@
-/usr/share/automake-1.10/INSTALL
+./configure && make && make install - you know.
