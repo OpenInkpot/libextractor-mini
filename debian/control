@@ -1,0 +1,16 @@
+Source: libextractor-oi-extras
+Priority: optional
+Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
+Build-Depends: debhelper (>= 4.2.0), libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev
+Section: core
+XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), pkg-config
+XCS-Cross-Build-Depends: libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev
+Standards-Version: 3.8.0
+
+Package: libextractor-oi-extras
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: additional plugins for libextractor
+ This package provides extractor.h API for libextractor for those who don't like
+ using libxetractor implementation of plugins loader, but uses libextractor
+ plugins.
