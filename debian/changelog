@@ -1,8 +1,9 @@
-libextractor-oi-extras (0.1-2) UNRELEASED; urgency=low
+libextractor-oi-extras (0.1-2) unstable; urgency=low
 
   * Updated to newer upstream snapshot.
+    - Fixed linking with expat and libzip.
 
- -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sun, 24 Aug 2008 03:58:59 +0700
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sun, 24 Aug 2008 06:15:49 +0700
 
 libextractor-oi-extras (0.1-1) unstable; urgency=low
 
