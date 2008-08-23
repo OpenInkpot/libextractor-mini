@@ -10,7 +10,7 @@ dnl bundled as a static library.
 AC_DEFUN([AM_WITH_EXPAT],
 [ AC_ARG_WITH(expat,
 	      [  --with-expat=PREFIX     Use system Expat library],
-	      , with_expat=no)
+	      , with_expat=yes)
 
   AM_CONDITIONAL(EXPAT_INSTALLED, test $with_expat != no)
 
