@@ -353,12 +353,9 @@ EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
     initvars();
     setup_fb2_parser(myparse);
 
-    if(!parse_zipped_fb2(myparse, filename))
-    {
-        XML_ParserFree(myparse);
-        return prev;
-    }
+    if(parse_zipped_fb2(myparse, filename))
+        prev = append_fb2_keywords(prev);
 
     XML_ParserFree(myparse);
-    return append_fb2_keywords(prev);
+    return prev;
 }
