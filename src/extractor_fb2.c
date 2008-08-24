@@ -178,6 +178,11 @@ void handlechar(void *userData,const XML_Char *s,int len)
     }
 }
 
+/*
+ * This function fills the 256-byte Unicode conversion table for single-byte
+ * encoding. The easy way to do it is to convert every byte to UTF-32 and then
+ * construct Unicode character from 4-byte representation.
+ */
 int fill_byte_encoding_table(const char* encoding, XML_Encoding* info)
 {
     int i;
