@@ -279,27 +279,27 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
                                                 const char* options)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
-    EXTRACTOR_KeywordList* keywords;
-
     initvars();
-
     setup_fb2_parser(myparse);
 
-    if(XML_Parse(myparse, data, size, 1) == XML_STATUS_ERROR)
+    /* Read file in chunks, stopping as soon as necessary */
+    while(!doneflag && size)
     {
-        /*
-         * Passed file is not a proper fb2.
-         */
-        return prev;
+        size_t part_size = BUF_SIZE < size ? BUF_SIZE : size;
+
+        if(XML_Parse(myparse, data, part_size, part_size == size) == XML_STATUS_ERROR)
+            goto err;
+
+        data += part_size;
+        size -= part_size;
     }
 
-    XML_ParserFree(myparse);
+    prev = append_fb2_keywords(prev);
 
-    keywords = append_fb2_keywords(prev);
-
+err:
     freevars();
-
-    return keywords;
+    XML_ParserFree(myparse);
+    return prev;
 }
 
 static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
