@@ -20,6 +20,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <expat.h>
@@ -43,10 +45,61 @@ int firstnameflag;
 int middlenameflag;
 int lastnameflag;
 int doneflag;
-char *title=NULL;
-char *authorfirst=NULL;
-char *authormiddle=NULL;
-char *authorlast=NULL;
+
+/* Either NULL or zero-terminated string */
+typedef struct
+{
+    char* value;
+    size_t len;
+} str_t;
+
+void str_init(str_t* s)
+{
+    s->value = NULL;
+    s->len = 0;
+}
+
+void str_fini(str_t* s)
+{
+    free(s->value);
+    s->value = NULL;
+    s->len = 0;
+}
+
+void str_append(str_t* s, const XML_Char* to_append, int len)
+{
+    if(!len)
+        return;
+
+    if(!s->value)
+    {
+        s->len = len;
+        s->value = malloc((s->len + 1) * sizeof(char));
+        if(!s->value)
+            perror("str_append");
+        memcpy(s->value, to_append, s->len);
+        s->value[s->len] = 0;
+    }
+    else
+    {
+        s->value = realloc(s->value, (s->len + len + 1) * sizeof(char));
+        if(!s->value)
+            perror("str_append");
+        memcpy(s->value + s->len, to_append, len);
+        s->len += len;
+        s->value[s->len] = 0;
+    }
+}
+
+const char* str_get(str_t* s)
+{
+    return s->value ? s->value : "";
+}
+
+str_t title;
+str_t authorfirst;
+str_t authormiddle;
+str_t authorlast;
 
 void initvars()
 {
@@ -57,10 +110,19 @@ void initvars()
     middlenameflag=0;
     lastnameflag=0;
     doneflag=0;
-    title=NULL;
-    authorfirst=NULL;
-    authormiddle=NULL;
-    authorlast=NULL;   
+
+    str_init(&title);
+    str_init(&authorfirst);
+    str_init(&authormiddle);
+    str_init(&authorlast);
+}
+
+void freevars()
+{
+    str_fini(&title);
+    str_fini(&authorfirst);
+    str_fini(&authormiddle);
+    str_fini(&authorlast);
 }
 
 void handlestart(void *userData,const XML_Char *name,const XML_Char **atts)
@@ -101,83 +163,21 @@ void handleend(void *userData,const XML_Char *name)
 
 void handlechar(void *userData,const XML_Char *s,int len)
 {
-    char *temp2=(char *)calloc(len+1,sizeof(char));
-    
-    strncpy(temp2,s,len);
-    temp2[len]='\0';
-    
-    char *temp=NULL;
-    if(titleflag==1&&len>0)
-    {
-        temp=title;
-        title=(char *)calloc(len+(temp==NULL?0:strlen(temp))+1,sizeof(char));
-        if(temp)
-        {
-            strncpy(title,temp,strlen(temp));
-            strncpy(&title[strlen(temp)],s,len);
-            title[len+strlen(temp)]='\0';
-            free(temp);
-        }
-        else
-        {
-            strncpy(title,s,len);
-            title[len]='\0';
-        }
-    }
-    else if(firstnameflag&&len>0)
-    {
-        temp=authorfirst;
-        authorfirst=(char *)calloc(len+(temp==NULL?0:strlen(temp))+1,sizeof(char));
-        if(temp)
-        {
-            strncpy(authorfirst,temp,strlen(temp));
-            strncpy(&authorfirst[strlen(temp)],s,len);
-            authorfirst[len+strlen(temp)]='\0';
-            free(temp);
-        }
-        else
-        {
-            strncpy(authorfirst,s,len);
-            authorfirst[len]='\0';
-        }
-        
-    }
-    else if(middlenameflag &&len>0)
-    {
-        temp=authormiddle;
-        authormiddle=(char *)calloc(len+(temp==NULL?0:strlen(temp))+1,sizeof(char));
-        if(temp)
-        {
-            strncpy(authormiddle,temp,strlen(temp));
-            strncpy(&authormiddle[strlen(temp)],s,len);
-            authormiddle[len+strlen(temp)]='\0';
-            free(temp);
-        }
-        else
-        {
-            strncpy(authormiddle,s,len);
-            authormiddle[len]='\0';
-        }
-    }
-    else if(lastnameflag&&len>0)
-    {
-        temp=authorlast;
-        authorlast=(char *)calloc(len+(temp==NULL?0:strlen(temp))+1,sizeof(char));
-        if(temp)
-        {
-            strncpy(authorlast,temp,strlen(temp));
-            strncpy(&authorlast[strlen(temp)],s,len);
-            authorlast[len+strlen(temp)]='\0';
-            free(temp);
-        }
-        else
-        {
-            strncpy(authorlast,s,len);
-            authorlast[len]='\0';
-        }
-    }
+    if(titleflag==1)
+        str_append(&title, s, len);
+    else if(firstnameflag)
+        str_append(&authorfirst, s, len);
+    else if(middlenameflag)
+        str_append(&authormiddle, s, len);
+    else if(lastnameflag)
+        str_append(&authorlast, s, len);
 }
 
+/*
+ * This function fills the 256-byte Unicode conversion table for single-byte
+ * encoding. The easy way to do it is to convert every byte to UTF-32 and then
+ * construct Unicode character from 4-byte representation.
+ */
 int fill_byte_encoding_table(const char* encoding, XML_Encoding* info)
 {
     int i;
@@ -246,35 +246,26 @@ static void setup_fb2_parser(XML_Parser myparse)
 
 static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
 {
-    if(title)
-        prev = add_to_list(prev, EXTRACTOR_TITLE, title);
-    
-    if(authorfirst||authormiddle||authorlast)
+    if(title.value)
     {
-        char* author = calloc((authorfirst?strlen(authorfirst):0)
-                              + (authormiddle?(strlen(authormiddle)+1):0)
-                              + (authorlast?(strlen(authorlast)+1):0)+1,
-                              sizeof(char));
+        char* title_copy = strdup(title.value);
+        if(!title_copy)
+            perror("append_fb2_keywords");
+        prev = add_to_list(prev, EXTRACTOR_TITLE, title_copy);
+    }
+    
+    if(authorfirst.value || authormiddle.value || authorlast.value)
+    {
+        char* author;
         
-        if(authorfirst)
-        {
-            strcat(author,authorfirst);
-            free(authorfirst);
-        }
-        
-        if(authormiddle)
-        {
-            strcat(author," ");
-            strcat(author,authormiddle);
-            free(authormiddle);
-        }
-        
-        if(authorlast)
-        {
-            strcat(author," ");
-            strcat(author,authorlast);
-            free(authorlast);
-        }
+        int r = asprintf(&author, "%s%s%s%s%s",
+                         str_get(&authorfirst),
+                         authormiddle.value ? " " : "",
+                         str_get(&authormiddle),
+                         authorlast.value ? " " : "",
+                         str_get(&authorlast));
+        if(!r)
+            perror("append_fb2_keywords");
 
         prev = add_to_list(prev, EXTRACTOR_AUTHOR, author);
     }
@@ -288,22 +279,27 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
                                                 const char* options)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
-
     initvars();
-
     setup_fb2_parser(myparse);
 
-    if(XML_Parse(myparse, data, size, 1) == XML_STATUS_ERROR)
+    /* Read file in chunks, stopping as soon as necessary */
+    while(!doneflag && size)
     {
-        /*
-         * Passed file is not a proper fb2.
-         */
-        return prev;
+        size_t part_size = BUF_SIZE < size ? BUF_SIZE : size;
+
+        if(XML_Parse(myparse, data, part_size, part_size == size) == XML_STATUS_ERROR)
+            goto err;
+
+        data += part_size;
+        size -= part_size;
     }
 
-    XML_ParserFree(myparse);
+    prev = append_fb2_keywords(prev);
 
-    return append_fb2_keywords(prev);
+err:
+    freevars();
+    XML_ParserFree(myparse);
+    return prev;
 }
 
 static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
@@ -357,12 +353,9 @@ EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
     initvars();
     setup_fb2_parser(myparse);
 
-    if(!parse_zipped_fb2(myparse, filename))
-    {
-        XML_ParserFree(myparse);
-        return prev;
-    }
+    if(parse_zipped_fb2(myparse, filename))
+        prev = append_fb2_keywords(prev);
 
     XML_ParserFree(myparse);
-    return append_fb2_keywords(prev);
+    return prev;
 }
