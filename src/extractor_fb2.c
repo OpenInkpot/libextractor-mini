@@ -96,10 +96,42 @@ const char* str_get(str_t* s)
     return s->value ? s->value : "";
 }
 
+typedef struct author_t_
+{
+    str_t first;
+    str_t middle;
+    str_t last;
+
+    struct author_t_* next;
+} author_t;
+
+author_t* authors;
 str_t title;
-str_t authorfirst;
-str_t authormiddle;
-str_t authorlast;
+
+void add_author()
+{
+    author_t* newauthor = malloc(sizeof(author_t));
+    str_init(&newauthor->first);
+    str_init(&newauthor->middle);
+    str_init(&newauthor->last);
+    newauthor->next = authors;
+    authors = newauthor;
+}
+
+void free_authors()
+{
+    author_t* author = authors;
+    while(author)
+    {
+        author_t* next = author->next;
+        str_fini(&author->first);
+        str_fini(&author->middle);
+        str_fini(&author->last);
+        free(author);
+        author = next;
+    }
+    authors = NULL;
+}
 
 void initvars()
 {
@@ -112,17 +144,12 @@ void initvars()
     doneflag=0;
 
     str_init(&title);
-    str_init(&authorfirst);
-    str_init(&authormiddle);
-    str_init(&authorlast);
 }
 
 void freevars()
 {
     str_fini(&title);
-    str_fini(&authorfirst);
-    str_fini(&authormiddle);
-    str_fini(&authorlast);
+    free_authors();
 }
 
 void handlestart(void *userData,const XML_Char *name,const XML_Char **atts)
@@ -132,7 +159,10 @@ void handlestart(void *userData,const XML_Char *name,const XML_Char **atts)
     else if(strcmp(name,"book-title")==0 && titleinfoflag)
         titleflag=1;
     else if(strcmp(name,"author")==0 &&titleinfoflag)
+    {
+        add_author();
         authorflag=1;
+    }
     else if(strcmp(name,"first-name")==0 && authorflag)
         firstnameflag=1;
     else if(strcmp(name,"middle-name")==0 && authorflag)
@@ -166,11 +196,17 @@ void handlechar(void *userData,const XML_Char *s,int len)
     if(titleflag==1)
         str_append(&title, s, len);
     else if(firstnameflag)
-        str_append(&authorfirst, s, len);
+    {
+        str_append(&authors->first, s, len);
+    }
     else if(middlenameflag)
-        str_append(&authormiddle, s, len);
+    {
+        str_append(&authors->middle, s, len);
+    }
     else if(lastnameflag)
-        str_append(&authorlast, s, len);
+    {
+        str_append(&authors->last, s, len);
+    }
 }
 
 /*
@@ -253,22 +289,28 @@ static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
             perror("append_fb2_keywords");
         prev = add_to_list(prev, EXTRACTOR_TITLE, title_copy);
     }
-    
-    if(authorfirst.value || authormiddle.value || authorlast.value)
-    {
-        char* author;
-        
-        int r = asprintf(&author, "%s%s%s%s%s",
-                         str_get(&authorfirst),
-                         authormiddle.value ? " " : "",
-                         str_get(&authormiddle),
-                         authorlast.value ? " " : "",
-                         str_get(&authorlast));
-        if(!r)
-            perror("append_fb2_keywords");
 
-        prev = add_to_list(prev, EXTRACTOR_AUTHOR, author);
+    author_t* author = authors;
+    while(author)
+    {
+        if(author->first.value || author->middle.value || author->last.value)
+        {
+            char* a;
+        
+            int r = asprintf(&a, "%s%s%s%s%s",
+                             str_get(&author->first),
+                             author->middle.value ? " " : "",
+                             str_get(&author->middle),
+                             author->last.value ? " " : "",
+                             str_get(&author->last));
+            if(!r)
+                perror("append_fb2_keywords");
+
+            prev = add_to_list(prev, EXTRACTOR_AUTHOR, a);
+        }
+        author = author->next;
     }
+
     return prev;
 }
 
