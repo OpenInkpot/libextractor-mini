@@ -1,3 +1,10 @@
+libextractor-oi-extras (0.1-5) unstable; urgency=low
+
+  * Updated to newer upstream snapshot.
+    - Added parsing of series title and sequence number.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Tue, 21 Oct 2008 16:46:43 +0700
+
 libextractor-oi-extras (0.1-4) asimov; urgency=low
 
   * Updated to newer upstream snapshot.
