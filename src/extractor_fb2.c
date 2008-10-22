@@ -107,6 +107,8 @@ typedef struct author_t_
 
 author_t* authors;
 str_t title;
+str_t series;
+str_t seq_number;
 
 void add_author()
 {
@@ -144,33 +146,65 @@ void initvars()
     doneflag=0;
 
     str_init(&title);
+    str_init(&series);
+    str_init(&seq_number);
 }
 
 void freevars()
 {
     str_fini(&title);
+    str_fini(&series);
+    str_fini(&seq_number);
     free_authors();
 }
 
-void handlestart(void *userData,const XML_Char *name,const XML_Char **atts)
+void parse_sequence_info(const XML_Char** atts)
 {
-    if(strcmp(name,"title-info")==0)
-        titleinfoflag=1;
-    else if(strcmp(name,"book-title")==0 && titleinfoflag)
-        titleflag=1;
-    else if(strcmp(name,"author")==0 &&titleinfoflag)
+    for(; *atts; ++atts)
     {
-        add_author();
-        authorflag=1;
+        if(!strcmp(*atts, "name"))
+        {
+            ++atts;
+            str_append(&series, *atts, strlen(*atts));
+        }
+        else if(!strcmp(*atts, "number"))
+        {
+            ++atts;
+            str_append(&seq_number, *atts, strlen(*atts));
+        }
     }
-    else if(strcmp(name,"first-name")==0 && authorflag)
-        firstnameflag=1;
-    else if(strcmp(name,"middle-name")==0 && authorflag)
-        middlenameflag=1;
-    else if(strcmp(name,"last-name")==0 && authorflag)
-        lastnameflag=1;
-    else if(strcmp(name,"body")==0)
-        doneflag=1;
+}
+
+void handlestart(void* userData, const XML_Char* name, const XML_Char** atts)
+{
+    if(!strcmp(name, "title-info"))
+        titleinfoflag = 1;
+
+    if(titleinfoflag)
+    {
+        if(!strcmp(name, "book-title"))
+            titleflag = 1;
+        else if(!strcmp(name, "author"))
+        {
+            add_author();
+            authorflag = 1;
+        }
+        else if(!strcmp(name, "sequence"))
+            parse_sequence_info(atts);
+    }
+
+    if(authorflag)
+    {
+        if(!strcmp(name, "first-name"))
+            firstnameflag = 1;
+        else if(!strcmp(name, "middle-name"))
+            middlenameflag = 1;
+        else if(!strcmp(name, "last-name"))
+            lastnameflag = 1;
+    }
+
+    if(!strcmp(name, "body"))
+        doneflag = 1;
 }
 
 void handleend(void *userData,const XML_Char *name)
@@ -309,6 +343,22 @@ static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
             prev = add_to_list(prev, EXTRACTOR_AUTHOR, a);
         }
         author = author->next;
+    }
+
+    if(series.value)
+    {
+        char* series_copy = strdup(series.value);
+        if(!series_copy)
+            perror("append_fb2_keywords");
+        prev = add_to_list(prev, EXTRACTOR_ALBUM, series_copy);
+    }
+
+    if(seq_number.value)
+    {
+        char* seq_number_copy = strdup(seq_number.value);
+        if(!seq_number_copy)
+            perror("append_fb2_keywords");
+        prev = add_to_list(prev, EXTRACTOR_TRACK_NUMBER, seq_number_copy);
     }
 
     return prev;
