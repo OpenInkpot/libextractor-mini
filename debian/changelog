@@ -1,3 +1,9 @@
+libextractor-oi-extras (0.1-6) unstable; urgency=low
+
+  * *Really* updated to newer upstream snapshot this time :)
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Wed, 22 Oct 2008 18:29:07 +0700
+
 libextractor-oi-extras (0.1-5) unstable; urgency=low
 
   * Updated to newer upstream snapshot.
