@@ -1,11 +1,11 @@
 Source: libextractor-oi-extras
 Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
-Build-Depends: debhelper (>= 4.2.0), libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev
+Build-Depends: debhelper (>= 4.2.0), libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev, autoconf, libtool, automake
 Section: core
-XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), pkg-config
-XCS-Cross-Build-Depends: libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev
-Standards-Version: 3.8.0
+XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), pkg-config, autoconf, libtool, automake
+XCS-Cross-Build-Depends: libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev (>= 0.8-3)
+standards-Version: 3.8.0
 
 Package: libextractor-oi-extras
 Architecture: any
