@@ -1,3 +1,9 @@
+libextractor-oi-extras (0.1-7) asimov; urgency=low
+
+  * Version bump
+
+ -- Alexander Kerner <lunohod@openinkpot.org>  Wed, 18 Mar 2009 01:44:01 +0100
+
 libextractor-oi-extras (0.1-6) unstable; urgency=low
 
   * *Really* updated to newer upstream snapshot this time :)
