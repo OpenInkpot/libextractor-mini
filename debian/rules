@@ -38,10 +38,6 @@ install: build
 binary-arch: install
 	dh_testdir
 	dh_testroot
-ifneq (,$(findstring docs,$(SLIND_BUILD_OPTIONS)))
-	dh_installdocs -a
-	dh_istallchangelogs -a
-endif
 	dh_link -a
 	dh_strip -a
 	dh_compress -a
