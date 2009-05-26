@@ -1,3 +1,9 @@
+libextractor-oi-extras (0.1-7+b1) asimov; urgency=low
+
+  * Rebuild to fix libgcc1 dependency.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Wed, 27 May 2009 01:35:31 +0700
+
 libextractor-oi-extras (0.1-7) asimov; urgency=low
 
   * Version bump
