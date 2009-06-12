@@ -386,6 +386,7 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
         size -= part_size;
     }
 
+    prev = add_to_list(prev, EXTRACTOR_MIMETYPE, "application/x-fb2");
     prev = append_fb2_keywords(prev);
 
 err:
@@ -446,7 +447,11 @@ EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
     setup_fb2_parser(myparse);
 
     if(parse_zipped_fb2(myparse, filename))
+    {
+        prev = add_to_list(prev, EXTRACTOR_MIMETYPE,
+                           "application/x-zip-compressed-fb2");
         prev = append_fb2_keywords(prev);
+    }
 
     XML_ParserFree(myparse);
     return prev;
