@@ -71,24 +71,12 @@ void str_append(str_t* s, const XML_Char* to_append, int len)
     if(!len)
         return;
 
+    s->value = realloc(s->value, (s->len + len + 1) * sizeof(char));
     if(!s->value)
-    {
-        s->len = len;
-        s->value = malloc((s->len + 1) * sizeof(char));
-        if(!s->value)
-            perror("str_append");
-        memcpy(s->value, to_append, s->len);
-        s->value[s->len] = 0;
-    }
-    else
-    {
-        s->value = realloc(s->value, (s->len + len + 1) * sizeof(char));
-        if(!s->value)
-            perror("str_append");
-        memcpy(s->value + s->len, to_append, len);
-        s->len += len;
-        s->value[s->len] = 0;
-    }
+        perror("str_append");
+    memcpy(s->value + s->len, to_append, len);
+    s->len += len;
+    s->value[s->len] = 0;
 }
 
 const char* str_get(str_t* s)
