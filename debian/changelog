@@ -1,3 +1,9 @@
+libextractor-oi-extras (0.1-8) asimov; urgency=low
+
+  * Added mime-type detection to fb2(.zip) plugin.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Fri, 12 Jun 2009 20:30:28 +0700
+
 libextractor-oi-extras (0.1-7+b1) asimov; urgency=low
 
   * Rebuild to fix libgcc1 dependency.
