@@ -255,7 +255,7 @@ int fill_byte_encoding_table(const char* encoding, XML_Encoding* info)
     iconv_t ic = iconv_open("UTF-32BE", encoding);
     if(ic == (iconv_t)-1)
         return XML_STATUS_ERROR;
-    
+
     for(i = 0; i < 256; ++i)
     {
         char from[1] = { i };
@@ -330,7 +330,7 @@ static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
         if(author->first.value || author->middle.value || author->last.value)
         {
             char* a;
-        
+
             int r = asprintf(&a, "%s%s%s%s%s",
                              str_get(&author->first),
                              author->middle.value ? " " : "",
