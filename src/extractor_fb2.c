@@ -374,7 +374,7 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
         size -= part_size;
     }
 
-    prev = add_to_list(prev, EXTRACTOR_MIMETYPE, "application/x-fb2");
+    prev = add_to_list(prev, EXTRACTOR_MIMETYPE, "application/x-fictionbook+xml");
     prev = append_fb2_keywords(prev);
 
 err:
