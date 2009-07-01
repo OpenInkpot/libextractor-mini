@@ -1,3 +1,9 @@
+libextractor-oi-extras (0.1-9) asimov; urgency=low
+
+  * Fixed .fb2 mime-info to match shared-mime-info.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Thu, 02 Jul 2009 04:53:46 +0700
+
 libextractor-oi-extras (0.1-8) asimov; urgency=low
 
   * Added mime-type detection to fb2(.zip) plugin.
