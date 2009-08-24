@@ -33,6 +33,8 @@ install: build
 
 	mkdir -p $(PKGDIR)/usr/lib/madshelf/extractors
 	install -m644 src/.libs/libextractor_fb2.so $(PKGDIR)/usr/lib/madshelf/extractors
+	install -m644 src/.libs/libextractor_ogg.so $(PKGDIR)/usr/lib/madshelf/extractors
+	install -m644 src/mp3/.libs/libextractor_mp3.so $(PKGDIR)/usr/lib/madshelf/extractors
 	ln -s libextractor_fb2.so $(PKGDIR)/usr/lib/madshelf/extractors/libextractor_fb2_zip.so
 
 binary-arch: install
