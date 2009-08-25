@@ -34,31 +34,19 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <extractor.h>
+#include <extractor-mini.h>
 #include <id3tag.h>
 #include "tag_id3.h"
 
 
-EXTRACTOR_KeywordList* add_to_list(EXTRACTOR_KeywordList* next,
-                                          EXTRACTOR_KeywordType type,
-                                          char* keyword)
-{
-    EXTRACTOR_KeywordList* c = malloc(sizeof(EXTRACTOR_KeywordList));
-    c->keyword = keyword;
-    c->keywordType = type;
-    c->next = next;
-    return c;
-}
-
-EXTRACTOR_KeywordList* libextractor_mp3_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                EXTRACTOR_KeywordList* prev,
-                                                const char* options)
+em_keyword_list_t* libextractor_mp3_extract(const char* filename,
+                                            char* data,
+                                            size_t size,
+                                            em_keyword_list_t* prev)
 {
    struct id3_tag *tag = tag_id3_load(filename);
    if (tag) {
-       prev = add_to_list(prev, EXTRACTOR_MIMETYPE, "audio/mpeg");
+       prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "audio/mpeg");
        tag_id3_import(&prev, tag);
        id3_tag_delete(tag);
     };

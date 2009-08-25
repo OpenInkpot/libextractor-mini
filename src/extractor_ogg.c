@@ -34,29 +34,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <extractor.h>
-
-#define BUF_SIZE 4096
-
-
-static EXTRACTOR_KeywordList* add_to_list(EXTRACTOR_KeywordList* next,
-                                          EXTRACTOR_KeywordType type,
-                                          char* keyword)
-{
-    EXTRACTOR_KeywordList* c = malloc(sizeof(EXTRACTOR_KeywordList));
-    c->keyword = keyword;
-    c->keywordType = type;
-    c->next = next;
-    return c;
-}
+#include <extractor-mini.h>
 
 
 
-EXTRACTOR_KeywordList* libextractor_ogg_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                EXTRACTOR_KeywordList* prev,
-                                                const char* options)
+
+
+em_keyword_list_t* libextractor_ogg_extract(const char* filename,
+                                            char* data,
+                                            size_t size,
+                                            em_keyword_list_t* prev)
 {
     return prev;
 }

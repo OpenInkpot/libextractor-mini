@@ -7,15 +7,12 @@ PKGDIR=debian/libextractor-oi-extras
 
 configure:
 	dh_testdir
-	autoreconf -f -i -v
 
-config.status: configure
-	dh_testdir
-	CFLAGS="$(CFLAGS)" ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
 
 build: build-stamp
 build-stamp: config.status
 	dh_testdir
+	CFLAGS="$(CFLAGS)" sh ./autogen.sh --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
 	$(MAKE)
 	touch build-stamp
 

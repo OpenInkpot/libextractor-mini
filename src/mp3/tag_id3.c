@@ -54,8 +54,8 @@ typedef enum EXTRACTOR_KeywordType tag_type;
 #endif
 
 static void
-tag_add_item(EXTRACTOR_KeywordList **dest, EXTRACTOR_KeywordType type, char* value) {
-    *dest = add_to_list(*dest, type, value);
+tag_add_item(em_keyword_list_t **dest, em_keyword_type_t type, char* value) {
+    *dest = em_keywords_add(*dest, type, value);
 }
 
 static inline bool
@@ -138,8 +138,8 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
  * - string list
  */
 static void
-tag_id3_import_text(EXTRACTOR_KeywordList **dest, struct id3_tag *tag, const char *id,
-		    EXTRACTOR_KeywordType type)
+tag_id3_import_text(em_keyword_list_t **dest, struct id3_tag *tag, const char *id,
+		    em_keyword_type_t type)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -192,8 +192,8 @@ tag_id3_import_text(EXTRACTOR_KeywordList **dest, struct id3_tag *tag, const cha
  * - full string (we use this one)
  */
 static void
-tag_id3_import_comment(EXTRACTOR_KeywordList **dest, struct id3_tag *tag, const char *id,
-		       EXTRACTOR_KeywordType type)
+tag_id3_import_comment(em_keyword_list_t **dest, struct id3_tag *tag, const char *id,
+		       em_keyword_type_t type)
 {
 	struct id3_frame const *frame;
 	id3_ucs4_t const *ucs4;
@@ -326,7 +326,7 @@ tag_id3_import_ufid(struct tag *mpd_tag, struct id3_tag *id3_tag)
 }
 #endif
 
-void tag_id3_import(EXTRACTOR_KeywordList **ret, struct id3_tag * tag)
+void tag_id3_import(em_keyword_list_t **ret, struct id3_tag * tag)
 {
 	tag_id3_import_text(ret, tag, ID3_FRAME_ARTIST, EXTRACTOR_ARTIST);
 //	tag_id3_import_text(ret, tag, ID3_FRAME_ALBUM_ARTIST,

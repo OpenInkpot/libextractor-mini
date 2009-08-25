@@ -21,17 +21,14 @@
 #define MPD_TAG_ID3_H
 
 //#include "config.h"
-#include <extractor.h>
+#include <extractor-mini.h>
 
 struct tag;
 
-void tag_id3_import(EXTRACTOR_KeywordList **prev,
+void tag_id3_import(em_keyword_list_t **prev,
         struct id3_tag *);
 
 struct id3_tag *tag_id3_load(const char *file);
 
-EXTRACTOR_KeywordList* add_to_list(EXTRACTOR_KeywordList* next,
-                                          EXTRACTOR_KeywordType type,
-                                          char* keyword);
 
 #endif

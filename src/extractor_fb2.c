@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <extractor.h>
+#include <extractor-mini.h>
 #include <zip.h>
 
 #define BUF_SIZE 4096
@@ -283,17 +283,6 @@ static int unknown_encoding_handler(void* user,
 }
 
 
-static EXTRACTOR_KeywordList* add_to_list(EXTRACTOR_KeywordList* next,
-                                          EXTRACTOR_KeywordType type,
-                                          char* keyword)
-{
-    EXTRACTOR_KeywordList* c = malloc(sizeof(EXTRACTOR_KeywordList));
-    c->keyword = keyword;
-    c->keywordType = type;
-    c->next = next;
-    return c;
-}
-
 static void setup_fb2_parser(XML_Parser myparse)
 {
     XML_UseParserAsHandlerArg(myparse);
@@ -302,14 +291,11 @@ static void setup_fb2_parser(XML_Parser myparse)
     XML_SetUnknownEncodingHandler(myparse, unknown_encoding_handler, NULL);
 }
 
-static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
+static em_keyword_list_t* append_fb2_keywords(em_keyword_list_t* prev)
 {
     if(title.value)
     {
-        char* title_copy = strdup(title.value);
-        if(!title_copy)
-            perror("append_fb2_keywords");
-        prev = add_to_list(prev, EXTRACTOR_TITLE, title_copy);
+        prev = em_keywords_add(prev, EXTRACTOR_TITLE, title.value);
     }
 
     author_t* author = authors;
@@ -328,35 +314,29 @@ static EXTRACTOR_KeywordList* append_fb2_keywords(EXTRACTOR_KeywordList* prev)
             if(!r)
                 perror("append_fb2_keywords");
 
-            prev = add_to_list(prev, EXTRACTOR_AUTHOR, a);
+            prev = em_keywords_add(prev, EXTRACTOR_AUTHOR, a);
+            free(a);
         }
         author = author->next;
     }
 
     if(series.value)
     {
-        char* series_copy = strdup(series.value);
-        if(!series_copy)
-            perror("append_fb2_keywords");
-        prev = add_to_list(prev, EXTRACTOR_ALBUM, series_copy);
+        prev = em_keywords_add(prev, EXTRACTOR_ALBUM, series.value);
     }
 
     if(seq_number.value)
     {
-        char* seq_number_copy = strdup(seq_number.value);
-        if(!seq_number_copy)
-            perror("append_fb2_keywords");
-        prev = add_to_list(prev, EXTRACTOR_TRACK_NUMBER, seq_number_copy);
+        prev = em_keywords_add(prev, EXTRACTOR_TRACK_NUMBER, seq_number.value);
     }
 
     return prev;
 }
 
-EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                EXTRACTOR_KeywordList* prev,
-                                                const char* options)
+em_keyword_list_t* libextractor_fb2_extract(const char* filename,
+                                            char* data,
+                                            size_t size,
+                                            em_keyword_list_t* prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
     initvars();
@@ -374,7 +354,7 @@ EXTRACTOR_KeywordList* libextractor_fb2_extract(const char* filename,
         size -= part_size;
     }
 
-    prev = add_to_list(prev, EXTRACTOR_MIMETYPE, "application/x-fictionbook+xml");
+    prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/x-fictionbook+xml");
     prev = append_fb2_keywords(prev);
 
 err:
@@ -423,11 +403,10 @@ err2:
     return 0;
 }
 
-EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
-                                                    char* data,
-                                                    size_t size,
-                                                    EXTRACTOR_KeywordList* prev,
-                                                    const char* options)
+em_keyword_list_t* libextractor_fb2_zip_extract(const char* filename,
+                                                char* data,
+                                                size_t size,
+                                                em_keyword_list_t* prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
 
@@ -436,7 +415,7 @@ EXTRACTOR_KeywordList* libextractor_fb2_zip_extract(const char* filename,
 
     if(parse_zipped_fb2(myparse, filename))
     {
-        prev = add_to_list(prev, EXTRACTOR_MIMETYPE,
+        prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE,
                            "application/x-zip-compressed-fb2");
         prev = append_fb2_keywords(prev);
     }
