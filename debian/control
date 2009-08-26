@@ -1,15 +1,36 @@
 Source: libextractor-oi-extras
 Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
-Build-Depends: debhelper (>= 4.2.0), libextractor-dummy-dev | libextractor-dev, libexpat-dev, libzip-dev, autoconf, libtool, automake
+Build-Depends: debhelper (>= 4.2.0), libexpat-dev, libzip-dev, autoconf, libtool, automake
 Section: core
 XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), pkg-config, autoconf, libtool, automake
-XCS-Cross-Build-Depends: libextractor-mini-dev, libexpat-dev, libzip-dev (>= 0.8-3)
+XCS-Cross-Build-Depends: libextractor-mini-dev, libexpat-dev, libzip-dev (>= 0.8-3), libvorbisidec-dev, libid3tag0-dev
 standards-Version: 3.8.0
+
+Package: extractor-mini
+Architecture: any
+Section: gui
+Depends: ${shlib:Depends}
+Description: Minimalistic metadata extractor -- test application
+
+Package: libextractor-mini0
+Architecture: any
+Section: gui
+Depends: ${shlib:Depends}
+Description: Minimalistic metadata extractor
+
+Package: libextractor-mini-dev
+Architecture: any
+Section: gui
+Depends: libextractor-mini0 (= ${source:Version})
+Description: API for libextractor-mini
+ This package provides extractor.h API for libextractor for those who don't like
+ using libxetractor implementation of plugins loader, but uses libextractor
+ plugins.
 
 Package: libextractor-oi-extras
 Architecture: any
-Depends: ${shlibs:Depends}, gconv-data-basic
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libxetractor implementation of plugins loader, but uses libextractor

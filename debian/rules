@@ -1,54 +1,7 @@
 #!/usr/bin/make -f
 
-DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
 
-PKGDIR=debian/libextractor-oi-extras
+DEB_CONFIGURE_SCRIPT = $(CURDIR)/$(DEB_SRCDIR)/autogen.sh
 
-configure:
-	dh_testdir
-
-
-build: build-stamp
-build-stamp: config.status
-	dh_testdir
-	CFLAGS="$(CFLAGS)" sh ./autogen.sh --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
-	$(MAKE)
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f *-stamp
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
-
-	mkdir -p $(PKGDIR)/usr/lib/madshelf/extractors
-	install -m644 src/.libs/libextractor_fb2.so $(PKGDIR)/usr/lib/madshelf/extractors
-	install -m644 src/.libs/libextractor_ogg.so $(PKGDIR)/usr/lib/madshelf/extractors
-	install -m644 src/mp3/.libs/libextractor_mp3.so $(PKGDIR)/usr/lib/madshelf/extractors
-	ln -s libextractor_fb2.so $(PKGDIR)/usr/lib/madshelf/extractors/libextractor_fb2_zip.so
-
-binary-arch: install
-	dh_testdir
-	dh_testroot
-	dh_link -a
-	dh_strip -a
-	dh_compress -a
-	dh_fixperms -a
-	dh_makeshlibs -a
-	dh_shlibdeps -a
-	dh_installdeb -a
-	dh_gencontrol -a
-	dh_md5sums -a
-	dh_builddeb -a
-
-binary-indep:
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
