@@ -1,3 +1,12 @@
+libextractor-oi-extras (0.2-1) asimov; urgency=low
+
+  * Refactoring
+  * Add support for mp3 (and stub for oggs)
+  * Add test utility
+  * make separated loader (libextractor-mini.so)
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Wed, 26 Aug 2009 03:43:22 +0300
+
 libextractor-oi-extras (0.1-9) asimov; urgency=low
 
   * Fixed .fb2 mime-info to match shared-mime-info.

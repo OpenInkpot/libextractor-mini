@@ -1,7 +1,7 @@
 AC_INIT(configure.in)
 
 AM_CONFIG_HEADER(src/config.h)
-AM_INIT_AUTOMAKE(libextractor_oi_extras, 0.1)
+AM_INIT_AUTOMAKE(libextractor_oi_extras, 0.2)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
