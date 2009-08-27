@@ -1,3 +1,9 @@
+libextractor-mini (0.2-2) asimov; urgency=low
+
+  * Source package renamed
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Fri, 28 Aug 2009 00:07:15 +0300
+
 libextractor-oi-extras (0.2-1) asimov; urgency=low
 
   * Refactoring

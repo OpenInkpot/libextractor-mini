@@ -1,4 +1,4 @@
-Source: libextractor-oi-extras
+Source: libextractor-mini
 Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
 Build-Depends: debhelper (>= 4.2.0), libexpat-dev, libzip-dev, autoconf, libtool, automake
@@ -28,7 +28,7 @@ Description: API for libextractor-mini
  using libxetractor implementation of plugins loader, but uses libextractor
  plugins.
 
-Package: libextractor-oi-extras
+Package: libextractor-mini-plugins
 Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
