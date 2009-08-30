@@ -1,3 +1,9 @@
+libextractor-mini (0.2-3) asimov; urgency=low
+
+  * Fix build depends, (close #450)
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Sun, 30 Aug 2009 14:19:35 +0300
+
 libextractor-mini (0.2-2) asimov; urgency=low
 
   * Source package renamed
