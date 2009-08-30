@@ -1,7 +1,7 @@
 Source: libextractor-mini
 Priority: optional
 Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
-Build-Depends: debhelper (>= 4.2.0), cdbs, libexpat-dev, libzip-dev, autoconf, libtool, automake, libvorbisidec-dev
+Build-Depends: debhelper (>= 4.2.0), cdbs, libexpat-dev, libzip-dev, autoconf, libtool, automake, libvorbisidec-dev, libid3tag0-dev, libglib2.0-dev
 Section: core
 XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), cdbs, cdbs-embedded, pkg-config, autoconf, libtool, automake
 XCS-Cross-Build-Depends: libexpat-dev, libzip-dev (>= 0.8-3), libvorbisidec-dev, libid3tag0-dev, libglib2.0-dev
