@@ -1,3 +1,9 @@
+libextractor-mini (0.2-4) asimov; urgency=low
+
+  * Re-enable files in libextractor-mini-plugins
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Mon, 31 Aug 2009 01:15:50 +0300
+
 libextractor-mini (0.2-3) asimov; urgency=low
 
   * Fix build depends, (close #450)
