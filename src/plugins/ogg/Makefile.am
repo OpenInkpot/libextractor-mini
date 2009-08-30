@@ -1,4 +1,4 @@
-INCLUDES = -I${top_srcdir}/lib
+INCLUDES = -I${top_srcdir}/src/lib
 AM_CFLAGS=-Wall
 
 plugin_LTLIBRARIES =  libextractor_ogg.la 

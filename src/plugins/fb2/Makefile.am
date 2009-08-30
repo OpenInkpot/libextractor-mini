@@ -1,4 +1,4 @@
-INCLUDES = @EXPAT_CFLAGS@ @LIBZIP_CFLAGS@ -I${top_srcdir}/lib
+INCLUDES = @EXPAT_CFLAGS@ @LIBZIP_CFLAGS@ -I${top_srcdir}/src/lib
 AM_CFLAGS=-Wall
 
 plugin_LTLIBRARIES = libextractor_fb2.la
