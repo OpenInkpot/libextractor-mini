@@ -4,7 +4,7 @@ Maintainer: Mikhail Gusarov <dottedmag@dottedmag.net>
 Build-Depends: debhelper (>= 4.2.0), cdbs, libexpat-dev, libzip-dev, autoconf, libtool, automake, libvorbisidec-dev
 Section: core
 XCS-Cross-Host-Build-Depends: debhelper (>= 4.2.0), cdbs, cdbs-embedded, pkg-config, autoconf, libtool, automake
-XCS-Cross-Build-Depends: libexpat-dev, libzip-dev (>= 0.8-3), libvorbisidec-dev, libid3tag0-dev
+XCS-Cross-Build-Depends: libexpat-dev, libzip-dev (>= 0.8-3), libvorbisidec-dev, libid3tag0-dev, libglib2.0-dev
 standards-Version: 3.8.0
 
 Package: extractor-mini
