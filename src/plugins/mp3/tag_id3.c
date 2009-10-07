@@ -86,7 +86,7 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 static const char *
 config_get_string()
 {
-    return NULL;
+    return "CP1251";
 }
 
 /* This will try to convert a string to utf-8,
