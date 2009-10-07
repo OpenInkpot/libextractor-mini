@@ -1,3 +1,9 @@
+libextractor-mini (0.2-5) asimov; urgency=low
+
+  * Force default id3v1 encoding to CP1251
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Wed, 07 Oct 2009 03:01:37 +0300
+
 libextractor-mini (0.2-4) asimov; urgency=low
 
   * Re-enable files in libextractor-mini-plugins
