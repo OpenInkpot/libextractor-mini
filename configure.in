@@ -23,5 +23,6 @@ src/bin/Makefile
 src/plugins/ogg/Makefile
 src/plugins/mp3/Makefile 
 src/plugins/fb2/Makefile
+src/plugins/rtf/Makefile
 )
 
