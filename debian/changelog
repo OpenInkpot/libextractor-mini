@@ -1,3 +1,9 @@
+libextractor-mini (0.2-6) asimov; urgency=low
+
+  * Fix small memory leak in plugins loading.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sun, 15 Nov 2009 05:41:06 +0600
+
 libextractor-mini (0.2-5) asimov; urgency=low
 
   * Force default id3v1 encoding to CP1251
