@@ -139,7 +139,10 @@ em_extractors_t* em_load_extractors()
     em_extractors_t* head = NULL;
 
     for(i = 0; i != nfiles; ++i)
+    {
         head = em_load_extractor(head, files[i]->d_name);
+        free(files[i]);
+    }
 
     free(files);
 
