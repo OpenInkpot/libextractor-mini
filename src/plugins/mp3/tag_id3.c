@@ -86,48 +86,69 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 static const char *
 config_get_string()
 {
-    return "CP1251";
+    return "cp1251";
 }
+
+
+static id3_utf8_t *
+import_8bit_string(id3_latin1_t* isostr, const char* encoding)
+{
+		id3_utf8_t* utf8 = (id3_utf8_t *)
+			g_convert_with_fallback((const char*)isostr,
+                        strlen((const char *) isostr),
+                        "utf-8",
+						encoding,
+						NULL, NULL, NULL, NULL);
+		if (utf8 == NULL) {
+			g_debug("Unable to convert %s string to UTF-8: '%s'",
+				encoding, isostr);
+        }
+        return utf8;
+}
+
 
 /* This will try to convert a string to utf-8,
  */
 static id3_utf8_t *
 import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 {
-	id3_utf8_t *utf8, *utf8_stripped;
+	id3_utf8_t *utf8, *utf8_stripped = NULL;
 	id3_latin1_t *isostr;
 	const char *encoding;
+    bool is_utf8;
+
+    encoding = config_get_string();
+	isostr = id3_ucs4_latin1duplicate(ucs4);
+	if (G_UNLIKELY(!isostr)) {
+		return NULL;
+	}
+    is_utf8 = check_utf8((const unsigned char *)isostr,
+        strlen((const char *)isostr));
+
+    if(is_utf8 >1) {
+		utf8 = id3_ucs4_utf8duplicate(ucs4);
+        g_debug("utf8 detected: %s", utf8);
+        goto done;
+    }
 
 	/* use encoding field here? */
-	if (is_id3v1 &&
-	    (encoding = config_get_string()) != NULL) {
-		isostr = id3_ucs4_latin1duplicate(ucs4);
-		if (G_UNLIKELY(!isostr)) {
-			return NULL;
-		}
-
-		utf8 = (id3_utf8_t *)
-			g_convert_with_fallback((const char*)isostr, -1,
-						encoding, "utf-8",
-						NULL, NULL, NULL, NULL);
-		if (utf8 == NULL) {
-			g_debug("Unable to convert %s string to UTF-8: '%s'",
-				encoding, isostr);
-			g_free(isostr);
-			return NULL;
-		}
-		g_free(isostr);
+	if (is_id3v1) {
+        g_debug("v1: %d, utf: %d, %s\n", is_id3v1, is_utf8, isostr);
+		utf8 = import_8bit_string(isostr, encoding);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if (G_UNLIKELY(!utf8)) {
-			return NULL;
-		}
+        g_debug("Plain v2: v1: %d, utf: %d, %s\n", is_id3v1, is_utf8, utf8);
 	}
 
-	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
-	g_free(utf8);
-
-	return utf8_stripped;
+done:
+    if(isostr)
+        g_free(isostr);
+    if(utf8) {
+    	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
+	    g_free(utf8);
+    	return utf8_stripped;
+    }
+    return NULL;
 }
 
 /**

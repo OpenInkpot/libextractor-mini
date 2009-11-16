@@ -24,11 +24,13 @@
 #include <extractor-mini.h>
 
 struct tag;
+struct id3_tag;
 
 void tag_id3_import(em_keyword_list_t **prev,
         struct id3_tag *);
 
 struct id3_tag *tag_id3_load(const char *file);
 
+int check_utf8(const unsigned char *buf, int len);
 
 #endif
