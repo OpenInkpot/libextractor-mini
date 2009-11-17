@@ -176,7 +176,7 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
                                                 size_t size,
                                                 em_keyword_list_t* prev)
 {
-    if (strncmp(data, RTF_START, RTF_START_LEN != 0))
+    if (size < RTF_START_LEN || strncmp(data, RTF_START, RTF_START_LEN != 0))
         return prev;
     
     char ch;
