@@ -49,7 +49,8 @@ const char* get_extractors_dir()
 static char* get_full_path(const char* extractor_file)
 {
     char* full_path;
-    asprintf(&full_path, "%s/%s", get_extractors_dir(), extractor_file);
+    if(!asprintf(&full_path, "%s/%s", get_extractors_dir(), extractor_file))
+        return NULL;
     return full_path;
 }
 
@@ -87,7 +88,8 @@ em_extractors_t* em_load_extractor(em_extractors_t* head, char* name)
     /* Remove '.so' from filename */
     name[strlen(name)-3] = 0;
     /* libextractor_foo_extract */
-    asprintf(&extract_name, "%s_extract", name);
+    if(!asprintf(&extract_name, "%s_extract", name))
+        return NULL;
     if(!extract_name)
     {
         fprintf(stderr, "Out of memory while loading extractor %s",
