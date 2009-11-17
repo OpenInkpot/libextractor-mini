@@ -1,3 +1,9 @@
+libextractor-mini (0.2-7) asimov; urgency=low
+
+  * Recode broken id3v2 encoding
+
+ -- Alexander V. Nikolaev <avn@daemon.hole.ru>  Tue, 17 Nov 2009 16:34:58 +0200
+
 libextractor-mini (0.2-6) asimov; urgency=low
 
   * Fix small memory leak in plugins loading.
