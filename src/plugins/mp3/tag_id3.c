@@ -125,19 +125,25 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
     is_utf8 = check_utf8((const unsigned char *)isostr,
         strlen((const char *)isostr));
 
-    if(is_utf8 >1) {
+    if(is_utf8) {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-        g_debug("utf8 detected: %s", utf8);
         goto done;
     }
 
 	/* use encoding field here? */
 	if (is_id3v1) {
-        g_debug("v1: %d, utf: %d, %s\n", is_id3v1, is_utf8, isostr);
 		utf8 = import_8bit_string(isostr, encoding);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-        g_debug("Plain v2: v1: %d, utf: %d, %s\n", is_id3v1, is_utf8, utf8);
+        if(!check_utf8((unsigned char *)utf8, strlen((const char *)utf8)))
+        {
+            id3_utf8_t *tmp = import_8bit_string(isostr, encoding);
+            if(tmp)
+            {
+                g_free(utf8);
+                utf8 = tmp;
+            }
+        }
 	}
 
 done:

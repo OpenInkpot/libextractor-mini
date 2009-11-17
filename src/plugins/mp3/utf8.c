@@ -67,7 +67,7 @@ int check_utf8(const unsigned char *buf, int len) {
 
 	}
     }
-    printf("check_utf8: %d : %s\n", res, buf);
-    return res;
+//    printf("check_utf8: %d : %s\n", res, buf);
+    return res > 1;
 }
 
