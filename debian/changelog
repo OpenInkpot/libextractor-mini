@@ -1,3 +1,10 @@
+libextractor-mini (0.2-8) asimov; urgency=low
+
+  * Added RTF and PDF detectors
+  * Split libextractor-mini-plugins package into smaller ones.
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Wed, 18 Nov 2009 04:57:41 +0600
+
 libextractor-mini (0.2-7) asimov; urgency=low
 
   * Recode broken id3v2 encoding
