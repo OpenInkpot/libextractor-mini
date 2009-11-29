@@ -64,6 +64,58 @@ static field_t fields[] = {
  */
 
 
+/* Detects if a string is UTF-8 encoded ro not */
+static bool
+detect_utf8(char *data, int len) {
+    int seq_rem = 0; /* 0 = First sequence byte, 1 = Second, etc. */
+    int i;
+    for (i = 0; i < len; i++) {
+        printf("%d %d\n", i ,len);
+        char ch = data[i];
+        printf("%d-", ch);
+        if (!seq_rem) {
+            /* First byte */
+            ch = ch >> 4;
+            printf("%d\n", ch);
+            switch (ch) {
+                case 12:
+                case 13:
+                    /* 110? ???? -> 2 bytes sequence */
+                    seq_rem = 1;
+                    break;
+                case 14:
+                    /* 1110 ???? -> 3 bytes sequence */
+                    seq_rem = 2;
+                    break;
+                case 15:
+                    /* 1111 ???? -> 4 bytes sequence */
+                    seq_rem = 3;
+                    break;
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                    /* Invalid */
+                    return false;
+                default:
+                    /* 0-7 0??? ???? -> 1 byte sequence */
+                    break;
+            }
+        } else {
+            /* Second, third or forth byte
+               Valid if 10?? ???? */
+            ch = ch >> 6;
+            printf("%d\n", ch);
+            if (ch != 2)
+                return false;
+            seq_rem--;
+        }
+    }
+    /* Valid if not expecting more bytes */
+    printf("detect as %d\n", seq_rem);
+    return (seq_rem == 0);
+}
+
 /* Parse a date and return a string in ISO format (or similar)
    Return string must be freed */
 static char *
@@ -158,7 +210,9 @@ parse_tag(char *tag, em_keyword_list_t *prev, int len)
             char *date;
             switch (fields[i].data_type) {
                 case RTF_STRING:
-                    prev = em_keywords_add(prev, fields[i].extractor_keyword, strndup(tag+l+1,len-l-1));
+                    /* Return only if UTF-8 (includes ASCII) */
+                    if (detect_utf8(tag+l+1,len-l-1))
+                        prev = em_keywords_add(prev, fields[i].extractor_keyword, strndup(tag+l+1,len-l-1));
                     break;
                 case RTF_DATE:
                     date = parse_date(tag+l);
