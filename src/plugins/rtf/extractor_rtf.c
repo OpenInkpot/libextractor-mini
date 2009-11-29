@@ -149,9 +149,8 @@ parse_date(char *tags)
 
 /* Parse a tag and append it to the libextractor keywords */
 static em_keyword_list_t *
-parse_tag(char *tag, em_keyword_list_t *prev)
+parse_tag(char *tag, em_keyword_list_t *prev, int len)
 {
-    int len = strlen(tag);
     int i;
     for (i = 0; i < NUM_FIELDS; i++) {
         int l = strlen(fields[i].rtf_field);
@@ -159,7 +158,7 @@ parse_tag(char *tag, em_keyword_list_t *prev)
             char *date;
             switch (fields[i].data_type) {
                 case RTF_STRING:
-                    prev = em_keywords_add(prev, fields[i].extractor_keyword, strdup(tag+l+1));
+                    prev = em_keywords_add(prev, fields[i].extractor_keyword, strndup(tag+l+1,len-l-1));
                     break;
                 case RTF_DATE:
                     date = parse_date(tag+l);
@@ -244,6 +243,9 @@ libextractor_rtf_extract(const char *filename,
         last_slash = false;
         char tag[TAG_BUFFER];
         int tag_pos = 0;
+        char hexcode[3];
+        hexcode[2] = 0;
+        long int charcode;
 
         /* Scan tags */
         while (level >= 0 && pos < size) {
@@ -253,30 +255,53 @@ libextractor_rtf_extract(const char *filename,
                 tag_pos = TAG_BUFFER - 1;
             switch (ch) {
                 case '\\':
-                    tag[tag_pos++] = ch;
+                    if (last_slash)
+                        tag[tag_pos++] = ch;
                     last_slash = !last_slash;
                     break;
                 case '{':
                     if (!last_slash) {
                         level = 1; /* Helps in some invalid file situations */
                         tag_pos = 0;
-                    }
-                    else
+                    } else {
                         tag[tag_pos++] = ch;
+                        last_slash = false;
+                    }
                     break;
                 case '}':
                     if (!last_slash) {
                         level--;
                         if (level >= 0) {
                             tag[tag_pos] = '\0';
-                            prev = parse_tag(tag, prev);
+                            prev = parse_tag(tag, prev, tag_pos);
                         }
+                    } else {
+                        tag[tag_pos++] = ch;
+                        last_slash = false;
                     }
-                    else
+                    break;
+                case '\'':
+                    if (last_slash) {
+                        last_slash = false;
+                        /* Next 2 characters are an hex code */
+                        if (pos + 2 > size)
+                            /* Invalid file */
+                            return prev;
+
+                        /* Convert hexcode to byte */
+                        strncpy(hexcode, &data[pos], 2);
+                        pos += 2;
+                        charcode = strtol(hexcode, NULL, 16);
+
+                        tag[tag_pos++] = charcode;
+                    } else
                         tag[tag_pos++] = ch;
                     break;
                 default:
-                    last_slash = false;
+                    if (last_slash) {
+                        tag[tag_pos++] = '\\';
+                        last_slash = false;
+                    }
                     tag[tag_pos++] = ch;
                     break;
             }
