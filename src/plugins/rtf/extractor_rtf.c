@@ -30,7 +30,7 @@
 #include <extractor-mini.h>
 
 #define RTF_START "{\\rtf"
-#define RTF_START_LEN 5  
+#define RTF_START_LEN 5
 #define TAG_BUFFER 2048
 
 typedef enum {
@@ -45,7 +45,7 @@ typedef struct {
 } field_t;
 
 #define NUM_FIELDS (sizeof(fields)/sizeof(fields[0]))
-field_t fields[] = {
+static field_t fields[] = {
     {"\\title", EXTRACTOR_TITLE, RTF_STRING},
     {"\\subject", EXTRACTOR_SUBJECT, RTF_STRING},
     {"\\author", EXTRACTOR_AUTHOR, RTF_STRING},
@@ -62,17 +62,17 @@ field_t fields[] = {
  * \comment: Usually the software used to create the file
  * \operator
  */
- 
+
 
 /* Parse a date and return a string in ISO format (or similar)
    Return string must be freed */
-char *
+static char *
 parse_date(char *tags)
 {
     char *pos = tags;
     int year, month, day, hour, min, sec;
     year = month = day = hour = min = sec = -1;
-    
+
     while (pos != NULL && pos < tags + strlen(tags)) {
         if (strncmp(pos, "\\yr", 3) == 0) {
             pos += 3;
@@ -106,22 +106,40 @@ parse_date(char *tags)
     adate = ahours = false;
     if (year > 0) {
         adate = true;
-        if (month > 0 && day > 0)
-            asprintf(&date, "%d-%02d-%02d", year, month, day);
-        else
-            asprintf(&date, "%d", year);
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            /* Year, month and day */
+            if (asprintf(&date, "%d-%02d-%02d", year, month, day) < 0) {
+                adate = false;
+            }
+        } else {
+            /* Year only */
+            if (asprintf(&date, "%d", year) < 0) {
+                adate = false;
+            }
+        }
     }
 
-    if (hour >= 0 && min >= 0) {
+    if (hour >= 0 && hour <= 23 && min >= 0 && min <= 59) {
         ahours = true;
-        if (sec >= 0)
-            asprintf(&hours, "%02d:%02d:%02d", hour, min, sec);
-        else
-            asprintf(&hours, "%02d:%02d", hour, min);
+        if (sec >= 0 && sec <= 59) {
+            /* Hour, minute and seconds */
+            if (asprintf(&hours, "%02d:%02d:%02d", hour, min, sec) < 0) {
+                ahours = false;
+            }
+        } else {
+            /* Hour and minutes */
+            if (asprintf(&hours, "%02d:%02d", hour, min) < 0) {
+                ahours = false;
+            }
+        }
     }
-    
+
     char *result;
-    asprintf(&result, "%s%s%s", adate ? date : "", (adate && ahours) ? " " : "", ahours ? hours : "");
+    if (adate || ahours) {
+        if (asprintf(&result, "%s%s%s", adate ? date : "", (adate && ahours) ? " " : "", ahours ? hours : "") < 0) {
+            result = NULL;
+        }
+    }
     if (adate)
         free(date);
     if (ahours)
@@ -130,7 +148,7 @@ parse_date(char *tags)
 }
 
 /* Parse a tag and append it to the libextractor keywords */
-em_keyword_list_t *
+static em_keyword_list_t *
 parse_tag(char *tag, em_keyword_list_t *prev)
 {
     int len = strlen(tag);
@@ -145,7 +163,8 @@ parse_tag(char *tag, em_keyword_list_t *prev)
                     break;
                 case RTF_DATE:
                     date = parse_date(tag+l);
-                    prev = em_keywords_add(prev, fields[i].extractor_keyword, date);
+                    if (date != NULL)
+                        prev = em_keywords_add(prev, fields[i].extractor_keyword, date);
                     break;
             }
             break;
@@ -155,14 +174,14 @@ parse_tag(char *tag, em_keyword_list_t *prev)
 }
 
 em_keyword_list_t *
-libextractor_rtf_extract(const char *filename, 
+libextractor_rtf_extract(const char *filename,
                          char *data,
                          size_t size,
                          em_keyword_list_t* prev)
 {
     if (size < RTF_START_LEN || strncmp(data, RTF_START, RTF_START_LEN != 0))
         return prev;
-    
+
     char ch;
     int level = 0;
     bool last_slash = false;
@@ -170,7 +189,7 @@ libextractor_rtf_extract(const char *filename,
     bool info_found = false;
     char waiting = 'i';
     int pos = RTF_START_LEN;
-    
+
     /* Mini parser to skip to \info */
     while (level >= 0 && pos < size) {
         ch = data[pos++];
@@ -215,17 +234,17 @@ libextractor_rtf_extract(const char *filename,
                 break;
         }
     }
-    
+
     /* We found \info or some other tag that comes after \info */
     if (info_found) {
         prev = em_keywords_add(prev, EXTRACTOR_FILENAME, filename);
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/rtf");
-        
+
         level = 0;
         last_slash = false;
         char tag[TAG_BUFFER];
         int tag_pos = 0;
-        
+
         /* Scan tags */
         while (level >= 0 && pos < size) {
             ch = data[pos++];
