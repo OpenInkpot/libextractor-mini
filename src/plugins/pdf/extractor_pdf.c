@@ -24,20 +24,18 @@
 #include <iconv.h>
 #include <extractor-mini.h>
 
-typedef enum
-{
+typedef enum {
     PDF_STRING,
     PDF_DATE
 } data_type_t;
 
-typedef struct
-{
-    char* pdf_field;
+typedef struct {
+    char *pdf_field;
     em_keyword_type_t extractor_keyword;
     data_type_t data_type;
 } field_t;
 
-#define NUM_FIELDS 8
+#define NUM_FIELDS (sizeof(fields)/sizeof(fields[0]))
 field_t fields[] = {
     {"Title", EXTRACTOR_TITLE, PDF_STRING},
     {"Subject", EXTRACTOR_SUBJECT, PDF_STRING},
@@ -51,35 +49,35 @@ field_t fields[] = {
 
 /* Converts UTF-16 -> UTF-8
  * Returns a string to be freed, or NULL */
-char* convert_unicode(char* unicode, int len)
+char *
+convert_unicode(char *unicode, int len)
 {
     iconv_t ic = iconv_open("utf-8", "utf-16");
     if (ic == (iconv_t)-1)
         return NULL;
     
-    char* outchars = calloc(1, len);
-    char* outcharscp = outchars;
+    char *outchars = calloc(1, len);
+    char *outcharscp = outchars;
     size_t inbytes = len;
     size_t outbytes = len;
-    char* inputchars = unicode;
+    char *inputchars = unicode;
     
     int result = iconv(ic, &inputchars, &inbytes, &outchars, &outbytes);
     
-    if (result < 0)
-    {
+    if (result < 0) {
         free(outcharscp);
         return NULL;
-    }
-    else
+    } else
         return outcharscp;
 }
 
-em_keyword_list_t* libextractor_pdf_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                em_keyword_list_t* prev)
+em_keyword_list_t *
+libextractor_pdf_extract(const char *filename,
+                         char *data,
+                         size_t size,
+                         em_keyword_list_t *prev)
 {
-    pdf_xref* xref;
+    pdf_xref *xref;
     fz_error error;
     fz_obj *obj;
 
@@ -93,8 +91,7 @@ em_keyword_list_t* libextractor_pdf_extract(const char* filename,
         return prev;
 
     error = pdf_decryptxref(xref);
-    if (error || xref->crypt)
-    {
+    if (error || xref->crypt) {
         pdf_closexref(xref);
         return prev;
     }
@@ -105,29 +102,24 @@ em_keyword_list_t* libextractor_pdf_extract(const char* filename,
     if (xref->info)
         fz_keepobj(xref->info);
     
-    if (xref->info)
-    {
+    if (xref->info) {
         /* We have some metadata */
         prev = em_keywords_add(prev, EXTRACTOR_FILENAME, filename);
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/pdf");
 
         int i;
-        for (i = 0; i < NUM_FIELDS; i++)
-        {
-            fz_obj* key;
+        for (i = 0; i < NUM_FIELDS; i++) {
+            fz_obj *key;
             error = fz_newname(&key, fields[i].pdf_field);
-            if (!error)
-            {
+            if (!error) {
                 obj = fz_dictget(xref->info, key);
-                if (obj)
-                {
-                    char* converted = convert_unicode(obj->u.s.buf, obj->u.s.len);
-                    char* data = (converted == NULL) ? obj->u.s.buf : converted;
+                if (obj) {
+                    char *converted = convert_unicode(obj->u.s.buf, obj->u.s.len);
+                    char *data = (converted == NULL) ? obj->u.s.buf : converted;
                     
                     int year, month, day, hour, minute, second;
-                    char* date;
-                    switch (fields[i].data_type)
-                    {
+                    char *date;
+                    switch (fields[i].data_type) {
                         case PDF_STRING:
                             prev = em_keywords_add(prev, fields[i].extractor_keyword, data);
                             break;

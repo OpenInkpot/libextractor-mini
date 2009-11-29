@@ -33,20 +33,18 @@
 #define RTF_START_LEN 5  
 #define TAG_BUFFER 2048
 
-typedef enum
-{
+typedef enum {
     RTF_STRING,
     RTF_DATE
 } data_type_t;
 
-typedef struct
-{
+typedef struct {
     char* rtf_field;
     em_keyword_type_t extractor_keyword;
     data_type_t data_type;
 } field_t;
 
-#define NUM_FIELDS 11
+#define NUM_FIELDS (sizeof(fields)/sizeof(fields[0]))
 field_t fields[] = {
     {"\\title", EXTRACTOR_TITLE, RTF_STRING},
     {"\\subject", EXTRACTOR_SUBJECT, RTF_STRING},
@@ -68,57 +66,45 @@ field_t fields[] = {
 
 /* Parse a date and return a string in ISO format (or similar)
    Return string must be freed */
-char* parse_date(char* tags)
+char *
+parse_date(char *tags)
 {
-    char* pos = tags;
+    char *pos = tags;
     int year, month, day, hour, min, sec;
     year = month = day = hour = min = sec = -1;
     
-    while (pos != NULL && pos < tags + strlen(tags))
-    {
-        if (strncmp(pos, "\\yr", 3) == 0)
-        {
+    while (pos != NULL && pos < tags + strlen(tags)) {
+        if (strncmp(pos, "\\yr", 3) == 0) {
             pos += 3;
             year = atoi(pos);
             pos = index(pos, '\\');
-        }
-        else if (strncmp(pos, "\\mo", 3) == 0)
-        {
+        } else if (strncmp(pos, "\\mo", 3) == 0) {
             pos += 3;
             month = atoi(pos);
             pos = index(pos, '\\');
-        }
-        else if (strncmp(pos, "\\dy", 3) == 0)
-        {
+        } else if (strncmp(pos, "\\dy", 3) == 0) {
             pos += 3;
             day = atoi(pos);
             pos = index(pos, '\\');
-        }
-        else if (strncmp(pos, "\\hr", 3) == 0)
-        {
+        } else if (strncmp(pos, "\\hr", 3) == 0) {
             pos += 3;
             hour = atoi(pos);
             pos = index(pos, '\\');
-        }
-        else if (strncmp(pos, "\\min", 4) == 0)
-        {
+        } else if (strncmp(pos, "\\min", 4) == 0) {
             pos += 4;
             min = atoi(pos);
             pos = index(pos, '\\');
-        } 
-        else if (strncmp(pos, "\\sec", 4) == 0)
-        {
+        } else if (strncmp(pos, "\\sec", 4) == 0) {
             pos += 4;
             sec = atoi(pos);
             pos = index(pos, '\\');
         }
     }
-    char* date;
-    char* hours;
+    char *date;
+    char *hours;
     bool adate, ahours;
     adate = ahours = false;
-    if (year > 0)
-    {
+    if (year > 0) {
         adate = true;
         if (month > 0 && day > 0)
             asprintf(&date, "%d-%02d-%02d", year, month, day);
@@ -126,8 +112,7 @@ char* parse_date(char* tags)
             asprintf(&date, "%d", year);
     }
 
-    if (hour >= 0 && min >= 0)
-    {
+    if (hour >= 0 && min >= 0) {
         ahours = true;
         if (sec >= 0)
             asprintf(&hours, "%02d:%02d:%02d", hour, min, sec);
@@ -135,7 +120,7 @@ char* parse_date(char* tags)
             asprintf(&hours, "%02d:%02d", hour, min);
     }
     
-    char* result;
+    char *result;
     asprintf(&result, "%s%s%s", adate ? date : "", (adate && ahours) ? " " : "", ahours ? hours : "");
     if (adate)
         free(date);
@@ -145,18 +130,16 @@ char* parse_date(char* tags)
 }
 
 /* Parse a tag and append it to the libextractor keywords */
-em_keyword_list_t* parse_tag(char* tag, em_keyword_list_t* prev)
+em_keyword_list_t *
+parse_tag(char *tag, em_keyword_list_t *prev)
 {
     int len = strlen(tag);
     int i;
-    for (i = 0; i < NUM_FIELDS; i++)
-    {
+    for (i = 0; i < NUM_FIELDS; i++) {
         int l = strlen(fields[i].rtf_field);
-        if (l <= len && strncmp(fields[i].rtf_field, tag, l) == 0)
-        {
-            char* date;
-            switch (fields[i].data_type)
-            {
+        if (l <= len && strncmp(fields[i].rtf_field, tag, l) == 0) {
+            char *date;
+            switch (fields[i].data_type) {
                 case RTF_STRING:
                     prev = em_keywords_add(prev, fields[i].extractor_keyword, strdup(tag+l+1));
                     break;
@@ -171,10 +154,11 @@ em_keyword_list_t* parse_tag(char* tag, em_keyword_list_t* prev)
     return prev;
 }
 
-em_keyword_list_t* libextractor_rtf_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                em_keyword_list_t* prev)
+em_keyword_list_t *
+libextractor_rtf_extract(const char *filename, 
+                         char *data,
+                         size_t size,
+                         em_keyword_list_t* prev)
 {
     if (size < RTF_START_LEN || strncmp(data, RTF_START, RTF_START_LEN != 0))
         return prev;
@@ -188,11 +172,9 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
     int pos = RTF_START_LEN;
     
     /* Mini parser to skip to \info */
-    while (level >= 0 && pos < size)
-    {
+    while (level >= 0 && pos < size) {
         ch = data[pos++];
-        switch (ch)
-        {
+        switch (ch) {
             case '\\':
                 last_slash = !last_slash;
                 if (level == 0 && started)
@@ -211,10 +193,8 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
                 break;
             default:
                 last_slash = false;
-                if (ch == waiting)
-                {
-                    switch (ch)
-                    {
+                if (ch == waiting) {
+                    switch (ch) {
                         case 'i':
                             waiting = 'n';
                             break;
@@ -237,8 +217,7 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
     }
     
     /* We found \info or some other tag that comes after \info */
-    if (info_found)
-    {
+    if (info_found) {
         prev = em_keywords_add(prev, EXTRACTOR_FILENAME, filename);
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/rtf");
         
@@ -248,14 +227,12 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
         int tag_pos = 0;
         
         /* Scan tags */
-        while (level >= 0 && pos < size)
-        {
+        while (level >= 0 && pos < size) {
             ch = data[pos++];
             /* At least don't overrun the buffer */
             if (tag_pos >= TAG_BUFFER - 1)
                 tag_pos = TAG_BUFFER - 1;
-            switch (ch)
-            {
+            switch (ch) {
                 case '\\':
                     tag[tag_pos++] = ch;
                     last_slash = !last_slash;
@@ -269,11 +246,9 @@ em_keyword_list_t* libextractor_rtf_extract(const char* filename,
                         tag[tag_pos++] = ch;
                     break;
                 case '}':
-                    if (!last_slash)
-                    {
+                    if (!last_slash) {
                         level--;
-                        if (level >= 0)
-                        {
+                        if (level >= 0) {
                             tag[tag_pos] = '\0';
                             prev = parse_tag(tag, prev);
                         }
