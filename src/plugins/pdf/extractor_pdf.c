@@ -60,8 +60,8 @@ libextractor_pdf_extract(const char *filename,
     fz_error error;
     fz_obj *obj;
 
-    error = pdf_newxref(&xref);
-    if (error)
+    xref = pdf_newxref();
+    if (!xref)
         return prev;
 
     /* Open file instead of using passed data */
@@ -90,8 +90,8 @@ libextractor_pdf_extract(const char *filename,
         for (i = 0; i < NUM_FIELDS; i++) {
             obj = fz_dictgets(xref->info, fields[i].pdf_field);
             if (obj) {
-                char *data;
-                if (!pdf_toutf8(&data, obj)) {
+                char *data = pdf_toutf8(obj);
+                if (!data) {
                     int year, month, day, hour, minute, second;
                     char *date;
                     switch (fields[i].data_type) {
