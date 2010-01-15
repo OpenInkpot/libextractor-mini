@@ -23,7 +23,8 @@ libextractor_mini.pc
 src/lib/Makefile
 src/bin/Makefile
 src/plugins/ogg/Makefile
-src/plugins/mp3/Makefile 
+src/plugins/mp3/Makefile
+src/plugins/epub/Makefile
 src/plugins/fb2/Makefile
 src/plugins/rtf/Makefile
 src/plugins/pdf/Makefile

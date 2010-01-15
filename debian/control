@@ -36,7 +36,7 @@ Description: API for libextractor-mini
 
 Package: libextractor-mini-plugins
 Architecture: any
-Depends: libextractor-mini-plugin-fb2, libextractor-mini-plugin-mp3, libextractor-mini-plugin-ogg
+Depends: libextractor-mini-plugin-fb2, libextractor-mini-plugin-epub, libextractor-mini-plugin-mp3, libextractor-mini-plugin-ogg
 Description: additional plugins for libextractor
  Library for metadata extraction from various files.
  .
@@ -99,3 +99,13 @@ Description: additional plugins for libextractor
  plugins.
  .
  This plugin fetches metadata from RTF files.
+
+Package: libextractor-mini-plugin-epub
+Architecture: any
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Description: additional plugins for libextractor
+ This package provides extractor.h API for libextractor for those who don't like
+ using libxetractor implementation of plugins loader, but uses libextractor
+ plugins.
+ .
+ This plugin fetches metadata from EPUB files.
