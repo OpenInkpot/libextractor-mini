@@ -280,26 +280,39 @@ static int parse_epub(struct zip* z)
 {
     int success = 0;
     struct zip_file* zf;
+    char buf[BUF_SIZE];
+    int nr;
     XML_Parser myparse;
+
+    /* Check it's really an EPUB and not some other zip-based format */
+    zf = zip_fopen(z, "mimetype", 0);
+    if(!zf)
+        goto free_zip;
+
+    nr = zip_fread(zf, buf, BUF_SIZE);
+    if(nr < strlen("application/epub+zip"))
+        goto free_zipfile;
+    if(!strstarts(buf, "application/epub+zip"))
+        goto free_zipfile;
+
+    zip_fclose(zf);
 
     /* Parse container.xml to find the OPF file */
     zf = zip_fopen(z, "META-INF/container.xml", 0);
     if(!zf)
-        goto err2;
+        goto free_zip;
 
     myparse = XML_ParserCreate(NULL);
     setup_ocf_parser(myparse);
 
     while(!doneflag)
     {
-        char buf[BUF_SIZE];
-        int nr = zip_fread(zf, buf, BUF_SIZE);
-
+        nr = zip_fread(zf, buf, BUF_SIZE);
         if(nr == -1)
-            goto err1;
+            goto free_xml;
 
         if(XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
-            goto err1;
+            goto free_xml;
 
         if(nr == 0)
             break;
@@ -320,14 +333,12 @@ static int parse_epub(struct zip* z)
 
     while(!doneflag)
     {
-        char buf[BUF_SIZE];
-        int nr = zip_fread(zf, buf, BUF_SIZE);
-
+        nr = zip_fread(zf, buf, BUF_SIZE);
         if(nr == -1)
-            goto err1;
+            goto free_xml;
 
         if(XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
-            goto err1;
+            goto free_xml;
 
         if(nr == 0)
             break;
@@ -335,10 +346,11 @@ static int parse_epub(struct zip* z)
 
     success = 1;
 
-err1:
+free_xml:
     XML_ParserFree(myparse);
+free_zipfile:
     zip_fclose(zf);
-err2:
+free_zip:
     zip_close(z);
     return success;
 }
