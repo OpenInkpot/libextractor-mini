@@ -1,3 +1,14 @@
+libextractor-mini (0.2.9) zelazny; urgency=low
+  
+  [ Mikhail Gusarov ]
+  * Fix PDF extractor to match changed MuPDF API
+
+  [ Alan Jenkins ]
+  * ePub extractor
+  * packaging cleanups
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Fri, 15 Jan 2010 17:01:29 +0600
+
 libextractor-mini (0.2-8) asimov; urgency=low
 
   * Added RTF and PDF detectors
