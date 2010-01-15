@@ -14,7 +14,7 @@ Depends: ${shlib:Depends}
 Description: Minimalistic metadata extractor -- test application
  Library for metadata extraction from various files.
  .
- This package contains small CLI app for library testing.
+ This package contains a small CLI app for library testing.
 
 Package: libextractor-mini0
 Architecture: any
@@ -23,7 +23,7 @@ Depends: ${shlib:Depends}
 Description: Minimalistic metadata extractor
  Library for metadata extraction from various files.
  .
- This package contains runtime library.
+ This package contains the runtime library.
 
 Package: libextractor-mini-dev
 Architecture: any
@@ -40,7 +40,7 @@ Depends: libextractor-mini-plugin-fb2, libextractor-mini-plugin-mp3, libextracto
 Description: additional plugins for libextractor
  Library for metadata extraction from various files.
  .
- This package provides default plugins set.
+ This package provides the default plugin set.
 
 Package: libextractor-mini-plugins-extra
 Architecture: any
@@ -48,14 +48,14 @@ Depends: libextractor-mini-plugins, libextractor-mini-plugin-pdf, libextractor-m
 Description: additional plugins for libextractor
  Library for metadata extraction from various files.
  .
- This package provides default plugins set
+ This package provides the full plugin set.
 
 Package: libextractor-mini-plugin-fb2
 Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
- using libxetractor implementation of plugins loader, but uses libextractor
+ using libextractor implementation of plugins loader, but uses libextractor
  plugins.
  .
  This plugin fetches metadata from FB2 files
@@ -65,37 +65,37 @@ Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
- using libxetractor implementation of plugins loader, but uses libextractor
+ using libextractor implementation of plugins loader, but uses libextractor
  plugins.
  .
- This plugin fetches metadata from mp3 files
+ This plugin fetches metadata from MP3 files
 
 Package: libextractor-mini-plugin-ogg
 Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
- using libxetractor implementation of plugins loader, but uses libextractor
+ using libextractor implementation of plugins loader, but uses libextractor
  plugins.
  .
- This plugin fetches metadata from mp3 files from Ogg Vorbis files.
+ This plugin fetches metadata from Ogg Vorbis files.
 
 Package: libextractor-mini-plugin-pdf
 Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
- using libxetractor implementation of plugins loader, but uses libextractor
+ using libextractor implementation of plugins loader, but uses libextractor
  plugins.
  .
- This plugin fetches metadata from mp3 files from PDF files.
+ This plugin fetches metadata from PDF files.
 
 Package: libextractor-mini-plugin-rtf
 Architecture: any
 Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
- using libxetractor implementation of plugins loader, but uses libextractor
+ using libextractor implementation of plugins loader, but uses libextractor
  plugins.
  .
- This plugin fetches metadata from mp3 files from RTF files.
+ This plugin fetches metadata from RTF files.
