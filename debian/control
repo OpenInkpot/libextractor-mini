@@ -28,7 +28,7 @@ Description: Minimalistic metadata extractor
 Package: libextractor-mini-dev
 Architecture: any
 Section: gui
-Depends: libextractor-mini0 (= ${source:Version})
+Depends: libextractor-mini0 (= ${binary:Version})
 Description: API for libextractor-mini
  Library for metadata extraction from various files.
  .
@@ -52,7 +52,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-fb2
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libextractor implementation of plugins loader, but uses libextractor
@@ -62,7 +62,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-mp3
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libextractor implementation of plugins loader, but uses libextractor
@@ -72,7 +72,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-ogg
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libextractor implementation of plugins loader, but uses libextractor
@@ -82,7 +82,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-pdf
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libextractor implementation of plugins loader, but uses libextractor
@@ -92,7 +92,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-rtf
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libextractor implementation of plugins loader, but uses libextractor
@@ -102,7 +102,7 @@ Description: additional plugins for libextractor
 
 Package: libextractor-mini-plugin-epub
 Architecture: any
-Depends: ${shlibs:Depends}, libextractor-mini0 (= ${source:Version})
+Depends: ${shlibs:Depends}, libextractor-mini0 (= ${binary:Version})
 Description: additional plugins for libextractor
  This package provides extractor.h API for libextractor for those who don't like
  using libxetractor implementation of plugins loader, but uses libextractor
