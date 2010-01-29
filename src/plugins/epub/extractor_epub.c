@@ -269,7 +269,8 @@ static em_keyword_list_t* append_epub_keywords(em_keyword_list_t* prev)
     author_t* author = authors;
     while(author)
     {
-        prev = em_keywords_add(prev, EXTRACTOR_AUTHOR, author->name.value);
+        if (author->name.value)
+            prev = em_keywords_add(prev, EXTRACTOR_AUTHOR, author->name.value);
         author = author->next;
     }
 
