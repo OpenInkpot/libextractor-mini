@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <iconv.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -41,74 +42,77 @@
 
 #define BUF_SIZE 4096
 
-int metadataflag;
-int authorflag;
-int titleflag;
-int doneflag;
+static int metadataflag;
+static int authorflag;
+static int titleflag;
+static int doneflag;
 
 /* Either NULL or zero-terminated string */
-typedef struct
-{
-    char* value;
+typedef struct {
+    char *value;
     size_t len;
 } str_t;
 
-void str_init(str_t* s)
+static void
+str_init(str_t *s)
 {
     s->value = NULL;
     s->len = 0;
 }
 
-void str_fini(str_t* s)
+static void
+str_fini(str_t *s)
 {
     free(s->value);
     s->value = NULL;
     s->len = 0;
 }
 
-void str_append(str_t* s, const XML_Char* to_append, int len)
+static void
+str_append(str_t *s, const XML_Char *to_append, int len)
 {
-    if(!len)
+    if (!len)
         return;
 
     s->value = realloc(s->value, (s->len + len + 1) * sizeof(char));
-    if(!s->value)
+    if (!s->value)
         perror("str_append");
     memcpy(s->value + s->len, to_append, len);
     s->len += len;
     s->value[s->len] = 0;
 }
 
-const char* str_get(str_t* s)
+static const char *
+str_get(str_t *s)
 {
     return s->value ? s->value : "";
 }
 
-typedef struct author_t_
-{
+typedef struct author_t_ {
     str_t name;
 
-    struct author_t_* next;
+    struct author_t_ *next;
 } author_t;
 
-str_t opf_filename;
-author_t* authors;
-str_t title;
+static str_t opf_filename;
+static author_t *authors;
+static str_t title;
 
-void add_author()
+static void
+add_author()
 {
-    author_t* newauthor = malloc(sizeof(author_t));
+    author_t *newauthor = malloc(sizeof(author_t));
     str_init(&newauthor->name);
     newauthor->next = authors;
     authors = newauthor;
 }
 
-void free_authors()
+static void
+free_authors(void)
 {
-    author_t* author = authors;
-    while(author)
-    {
-        author_t* next = author->next;
+    author_t *author = authors;
+    while (author) {
+        author_t *next = author->next;
         str_fini(&author->name);
         free(author);
         author = next;
@@ -116,7 +120,8 @@ void free_authors()
     authors = NULL;
 }
 
-void initvars()
+static void
+initvars()
 {
     metadataflag=0;
     authorflag=0;
@@ -127,7 +132,8 @@ void initvars()
     str_init(&title);
 }
 
-void freevars()
+static void
+freevars()
 {
     str_fini(&opf_filename);
     str_fini(&title);
@@ -137,9 +143,10 @@ void freevars()
 #define strstarts(str, pfx) (!memcmp(str, pfx, strlen(pfx)))
 
 /* Strip dc namespace. dc and dcterms are identical for our purposes */
-const char* dcname(const char* name)
+static const char *
+dcname(const char *name)
 {
-    if(strstarts(name, "http://purl.org/dc/elements/1.1/|"))
+    if (strstarts(name, "http://purl.org/dc/elements/1.1/|"))
         name += strlen("http://purl.org/dc/elements/1.1/|");
     else if (strstarts(name, "http://purl.org/dc/terms/|"))
         name += strlen("http://purl.org/dc/terms/|");
@@ -154,10 +161,10 @@ const char* dcname(const char* name)
  * Nevertheless, OEBPS 1.2 uses "dc:Title" whereas OPF 2.0 uses "dc:title".
  * I suspect the OEBPS definition is buggy.
  */
-int dcmatch(const char* name, const char* match)
+static int
+dcmatch(const char *name, const char *match)
 {
-    if (name[0] >= 'A' && name[0] <= 'Z')
-    {
+    if (name[0] >= 'A' && name[0] <= 'Z') {
         if (tolower(name[0]) == match[0])
             return 0;
         name++;
@@ -166,23 +173,22 @@ int dcmatch(const char* name, const char* match)
     return !strcmp(name, match);
 }
 
-void handlestart(void* userData, const XML_Char* name, const XML_Char** atts)
+static void
+handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
-    const char* dc;
+    const char *dc;
 
     /* OEBPS <= 1.2 and OPF 2.0 respectively */
-    if(!strcmp(name, "metadata") ||
-       !strcmp(name, "http://www.idpf.org/2007/opf|metadata"))
+    if (!strcmp(name, "metadata") ||
+        !strcmp(name, "http://www.idpf.org/2007/opf|metadata"))
         metadataflag = 1;
 
-    if(metadataflag)
-    {
+    if (metadataflag) {
         dc = dcname(name);
         if (dc) {
-            if(dcmatch(dc, "title"))
+            if (dcmatch(dc, "title"))
                 titleflag = 1;
-            else if(dcmatch(dc, "creator"))
-            {
+            else if (dcmatch(dc, "creator")) {
                 add_author();
                 authorflag = 1;
             }
@@ -190,51 +196,48 @@ void handlestart(void* userData, const XML_Char* name, const XML_Char** atts)
     }
 }
 
-void handleend(void *userData,const XML_Char *name)
+static void
+handleend(void *userData, const XML_Char *name)
 {
-    const char* dc;
+    const char *dc;
 
-    if(strcmp(name,"metadata")==0)
+    if (strcmp(name,"metadata")==0)
         doneflag=0;
     else if (metadataflag) {
         dc = dcname(name);
         if (dc) {
-            if(dcmatch(dc,"title"))
+            if (dcmatch(dc,"title"))
                 titleflag=0;
-            else if(dcmatch(dc,"creator"))
+            else if (dcmatch(dc,"creator"))
                 authorflag=0;
         }
     }
 }
 
-void handlechar(void *userData,const XML_Char *s,int len)
+static void
+handlechar(void *userData, const XML_Char *s, int len)
 {
-    if(titleflag==1)
+    if (titleflag==1)
         str_append(&title, s, len);
-    else if(authorflag)
+    else if (authorflag)
         str_append(&authors->name, s, len);
 }
 
-void ocf_handlestart(void* userData, const XML_Char* name, const XML_Char** atts)
+static void
+ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
-    if(!strcmp(name, "rootfile")) {
+    if (!strcmp(name, "rootfile")) {
         const char *filename = NULL;
         const char *type = NULL;
 
-        for(; *atts; ++atts)
-        {
-            if(!strcmp(*atts, "media-type"))
-            {
+        for(; *atts; ++atts) {
+            if (!strcmp(*atts, "media-type")) {
                 ++atts;
                 type = *atts;
-            }
-            else if(!strcmp(*atts, "full-path"))
-            {
+            } else if (!strcmp(*atts, "full-path")) {
                 ++atts;
                 filename = *atts;
-            }
-            else
-            {
+            } else {
                 ++atts;
             }
         }
@@ -246,29 +249,30 @@ void ocf_handlestart(void* userData, const XML_Char* name, const XML_Char** atts
     }
 }
 
-static void setup_opf_parser(XML_Parser myparse)
+static void
+setup_opf_parser(XML_Parser myparse)
 {
     XML_UseParserAsHandlerArg(myparse);
     XML_SetElementHandler(myparse,handlestart,handleend);
     XML_SetCharacterDataHandler(myparse,handlechar);
 }
 
-static void setup_ocf_parser(XML_Parser myparse)
+static void
+setup_ocf_parser(XML_Parser myparse)
 {
     XML_UseParserAsHandlerArg(myparse);
     XML_SetElementHandler(myparse,ocf_handlestart,NULL);
 }
 
-static em_keyword_list_t* append_epub_keywords(em_keyword_list_t* prev)
+static em_keyword_list_t *
+append_epub_keywords(em_keyword_list_t *prev)
 {
-    if(title.value)
-    {
+    if(title.value) {
         prev = em_keywords_add(prev, EXTRACTOR_TITLE, title.value);
     }
 
-    author_t* author = authors;
-    while(author)
-    {
+    author_t *author = authors;
+    while (author) {
         if (author->name.value)
             prev = em_keywords_add(prev, EXTRACTOR_AUTHOR, author->name.value);
         author = author->next;
@@ -277,45 +281,45 @@ static em_keyword_list_t* append_epub_keywords(em_keyword_list_t* prev)
     return prev;
 }
 
-static int parse_epub(struct zip* z)
+static bool
+parse_epub(struct zip *z)
 {
-    int success = 0;
-    struct zip_file* zf;
+    bool success = false;
+    struct zip_file *zf;
     char buf[BUF_SIZE];
     int nr;
     XML_Parser myparse;
 
     /* Check it's really an EPUB and not some other zip-based format */
     zf = zip_fopen(z, "mimetype", 0);
-    if(!zf)
+    if (!zf)
         goto free_zip;
 
     nr = zip_fread(zf, buf, BUF_SIZE);
-    if(nr < strlen("application/epub+zip"))
+    if (nr < strlen("application/epub+zip"))
         goto free_zipfile;
-    if(!strstarts(buf, "application/epub+zip"))
+    if (!strstarts(buf, "application/epub+zip"))
         goto free_zipfile;
 
     zip_fclose(zf);
 
     /* Parse container.xml to find the OPF file */
     zf = zip_fopen(z, "META-INF/container.xml", 0);
-    if(!zf)
+    if (!zf)
         goto free_zip;
 
     myparse = XML_ParserCreate(NULL);
     setup_ocf_parser(myparse);
 
-    while(!doneflag)
-    {
+    while (!doneflag) {
         nr = zip_fread(zf, buf, BUF_SIZE);
-        if(nr == -1)
+        if (nr == -1)
             goto free_xml;
 
-        if(XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
+        if (XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
             goto free_xml;
 
-        if(nr == 0)
+        if (nr == 0)
             break;
     }
     XML_ParserFree(myparse);
@@ -325,27 +329,26 @@ static int parse_epub(struct zip* z)
     if (!opf_filename.value)
         return 0;
     zf = zip_fopen(z, opf_filename.value, 0);
-    if(!zf)
+    if (!zf)
         return 0;
 
     myparse = XML_ParserCreateNS(NULL, '|');
     setup_opf_parser(myparse);
     doneflag = 0;
 
-    while(!doneflag)
-    {
+    while (!doneflag) {
         nr = zip_fread(zf, buf, BUF_SIZE);
-        if(nr == -1)
+        if (nr == -1)
             goto free_xml;
 
-        if(XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
+        if (XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
             goto free_xml;
 
-        if(nr == 0)
+        if (nr == 0)
             break;
     }
 
-    success = 1;
+    success = true;
 
 free_xml:
     XML_ParserFree(myparse);
@@ -356,22 +359,20 @@ free_zip:
     return success;
 }
 
-em_keyword_list_t* libextractor_epub_extract(const char* filename,
-                                                char* data,
-                                                size_t size,
-                                                em_keyword_list_t* prev)
+em_keyword_list_t *
+libextractor_epub_extract(const char *filename, char *data,
+                          size_t size, em_keyword_list_t *prev)
 {
-    struct zip* z;
+    struct zip *z;
 
     initvars();
 
     /* libzip does not allow to open zip file from memory. Wink-wink. */
     z = zip_open(filename, 0, NULL);
-    if(!z)
+    if (!z)
         return prev;
 
-    if(parse_epub(z))
-    {
+    if (parse_epub(z)) {
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE,
                            "application/epub+zip");
         prev = append_epub_keywords(prev);
