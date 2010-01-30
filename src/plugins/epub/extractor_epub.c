@@ -124,7 +124,8 @@ freedata(data_t *data)
     free_authors(&data->authors);
 }
 
-#define strstarts(str, pfx) (!memcmp(str, pfx, strlen(pfx)))
+#define streq(a,b) (strcmp((a),(b)) == 0)
+#define strstarts(a,start) (strncmp((a),(start), strlen(start)) == 0)
 
 /* Strip dc namespace. dc and dcterms are identical for our purposes */
 static const char *
@@ -154,7 +155,7 @@ dcmatch(const char *name, const char *match)
         name++;
         match++;
     }
-    return !strcmp(name, match);
+    return streq(name, match);
 }
 
 static void
@@ -164,9 +165,11 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
     const char *dc;
 
     /* OEBPS <= 1.2 and OPF 2.0 respectively */
-    if (!strcmp(name, "metadata") ||
-        !strcmp(name, "http://www.idpf.org/2007/opf|metadata"))
+    if (streq(name, "metadata") ||
+        streq(name, "http://www.idpf.org/2007/opf|metadata")) {
         data->metadataflag = 1;
+        return;
+    }
 
     if (data->metadataflag) {
         dc = dcname(name);
@@ -187,15 +190,18 @@ handleend(void *userData, const XML_Char *name)
     data_t *data = userData;
     const char *dc;
 
-    if (strcmp(name,"metadata")==0)
-        data->doneflag=0;
-    else if (data->metadataflag) {
+    if (data->metadataflag) {
+        if (streq(name, "metadata")) {
+            data->doneflag = 1;
+            return;
+        }
+
         dc = dcname(name);
         if (dc) {
-            if (dcmatch(dc,"title"))
-                data->titleflag=0;
-            else if (dcmatch(dc,"creator"))
-                data->authorflag=0;
+            if (dcmatch(dc, "title"))
+                data->titleflag = 0;
+            else if (dcmatch(dc, "creator"))
+                data->authorflag = 0;
         }
     }
 }
@@ -205,7 +211,7 @@ handlechar(void *userData, const XML_Char *s, int len)
 {
     data_t *data = userData;
 
-    if (data->titleflag==1)
+    if (data->titleflag)
         str_append(&data->title, s, len);
     else if (data->authorflag)
         str_append(&data->authors->name, s, len);
@@ -216,15 +222,15 @@ ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
     data_t *data = userData;
 
-    if (!strcmp(name, "rootfile")) {
+    if (streq(name, "rootfile")) {
         const char *filename = NULL;
         const char *type = NULL;
 
         for(; *atts; ++atts) {
-            if (!strcmp(*atts, "media-type")) {
+            if (streq(*atts, "media-type")) {
                 ++atts;
                 type = *atts;
-            } else if (!strcmp(*atts, "full-path")) {
+            } else if (streq(*atts, "full-path")) {
                 ++atts;
                 filename = *atts;
             } else {
@@ -232,7 +238,7 @@ ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
             }
         }
 
-        if (!strcmp(type, "application/oebps-package+xml")) {
+        if (streq(type, "application/oebps-package+xml")) {
             str_append(&data->opf_filename, filename, strlen(filename));
             data->doneflag = 1;
         }
