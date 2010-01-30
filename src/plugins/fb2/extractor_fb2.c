@@ -421,6 +421,7 @@ em_keyword_list_t* libextractor_fb2_zip_extract(const char* filename,
         prev = append_fb2_keywords(prev);
     }
 
+    freevars();
     XML_ParserFree(myparse);
     return prev;
 }
