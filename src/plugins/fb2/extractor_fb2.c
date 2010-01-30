@@ -188,7 +188,7 @@ void handleend(void *userData,const XML_Char *name)
     data_t *data = userData;
 
     if(strcmp(name,"title-info")==0)
-        data->titleinfoflag=0;
+        data->doneflag=1;
     else if(strcmp(name,"book-title")==0 && data->titleinfoflag)
         data->titleflag=0;
     else if(strcmp(name,"author")==0 && data->titleinfoflag)
@@ -199,8 +199,6 @@ void handleend(void *userData,const XML_Char *name)
         data->middlenameflag=0;
     else if(strcmp(name,"last-name")==0 && data->authorflag)
         data->lastnameflag=0;
-    else if(strcmp(name,"title-info")==0)
-        data->doneflag=1;
 }
 
 void handlechar(void *userData,const XML_Char *s,int len)
