@@ -269,6 +269,7 @@ int fill_byte_encoding_table(const char* encoding, XML_Encoding* info)
             info->map[i] = to[0] * (1<<24) + to[1] * (1 << 16) + to[2] * (1 << 8) + to[3];
     }
 
+    iconv_close(ic);
     return XML_STATUS_OK;
 }
 
