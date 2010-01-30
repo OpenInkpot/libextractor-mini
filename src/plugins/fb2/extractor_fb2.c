@@ -38,26 +38,12 @@
 
 #define BUF_SIZE 4096
 
-int authorflag;
-int titleflag;
-int titleinfoflag;
-int firstnameflag;
-int middlenameflag;
-int lastnameflag;
-int doneflag;
-
 /* Either NULL or zero-terminated string */
 typedef struct
 {
     char* value;
     size_t len;
 } str_t;
-
-void str_init(str_t* s)
-{
-    s->value = NULL;
-    s->len = 0;
-}
 
 void str_fini(str_t* s)
 {
@@ -93,24 +79,34 @@ typedef struct author_t_
     struct author_t_* next;
 } author_t;
 
-author_t* authors;
-str_t title;
-str_t series;
-str_t seq_number;
-
-void add_author()
+typedef struct data_t_
 {
-    author_t* newauthor = malloc(sizeof(author_t));
-    str_init(&newauthor->first);
-    str_init(&newauthor->middle);
-    str_init(&newauthor->last);
-    newauthor->next = authors;
-    authors = newauthor;
+    /* parsing state */
+    int authorflag;
+    int titleflag;
+    int titleinfoflag;
+    int firstnameflag;
+    int middlenameflag;
+    int lastnameflag;
+    int doneflag;
+
+    /* results */
+    author_t* authors;
+    str_t title;
+    str_t series;
+    str_t seq_number;
+} data_t;
+
+void add_author(author_t **authors)
+{
+    author_t* newauthor = calloc(1, sizeof(author_t));
+    newauthor->next = *authors;
+    *authors = newauthor;
 }
 
-void free_authors()
+void free_authors(author_t **authors)
 {
-    author_t* author = authors;
+    author_t* author = *authors;
     while(author)
     {
         author_t* next = author->next;
@@ -120,114 +116,110 @@ void free_authors()
         free(author);
         author = next;
     }
-    authors = NULL;
+    *authors = NULL;
 }
 
-void initvars()
+void initdata(data_t *data)
 {
-    authorflag=0;
-    titleflag=0;
-    titleinfoflag=0;
-    firstnameflag=0;
-    middlenameflag=0;
-    lastnameflag=0;
-    doneflag=0;
-
-    str_init(&title);
-    str_init(&series);
-    str_init(&seq_number);
+    memset(data, 0x00, sizeof(data_t));
 }
 
-void freevars()
+void freedata(data_t *data)
 {
-    str_fini(&title);
-    str_fini(&series);
-    str_fini(&seq_number);
-    free_authors();
+    str_fini(&data->title);
+    str_fini(&data->series);
+    str_fini(&data->seq_number);
+    free_authors(&data->authors);
 }
 
-void parse_sequence_info(const XML_Char** atts)
+void parse_sequence_info(data_t *data, const XML_Char** atts)
 {
     for(; *atts; ++atts)
     {
         if(!strcmp(*atts, "name"))
         {
             ++atts;
-            str_append(&series, *atts, strlen(*atts));
+            str_append(&data->series, *atts, strlen(*atts));
         }
         else if(!strcmp(*atts, "number"))
         {
             ++atts;
-            str_append(&seq_number, *atts, strlen(*atts));
+            str_append(&data->seq_number, *atts, strlen(*atts));
         }
     }
 }
 
 void handlestart(void* userData, const XML_Char* name, const XML_Char** atts)
 {
-    if(!strcmp(name, "title-info"))
-        titleinfoflag = 1;
+    data_t *data = userData;
 
-    if(titleinfoflag)
+    if(!strcmp(name, "title-info"))
+        data->titleinfoflag = 1;
+
+    if(data->titleinfoflag)
     {
         if(!strcmp(name, "book-title"))
-            titleflag = 1;
+            data->titleflag = 1;
         else if(!strcmp(name, "author"))
         {
-            add_author();
-            authorflag = 1;
+            add_author(&data->authors);
+            data->authorflag = 1;
         }
         else if(!strcmp(name, "sequence"))
-            parse_sequence_info(atts);
+            parse_sequence_info(data, atts);
     }
 
-    if(authorflag)
+    if(data->authorflag)
     {
         if(!strcmp(name, "first-name"))
-            firstnameflag = 1;
+            data->firstnameflag = 1;
         else if(!strcmp(name, "middle-name"))
-            middlenameflag = 1;
+            data->middlenameflag = 1;
         else if(!strcmp(name, "last-name"))
-            lastnameflag = 1;
+            data->lastnameflag = 1;
     }
 
     if(!strcmp(name, "body"))
-        doneflag = 1;
+        data->doneflag = 1;
 }
 
 void handleend(void *userData,const XML_Char *name)
 {
+    data_t *data = userData;
+
     if(strcmp(name,"title-info")==0)
-        titleinfoflag=0;
-    else if(strcmp(name,"book-title")==0 &&titleinfoflag)
-        titleflag=0;
-    else if(strcmp(name,"author")==0 && titleinfoflag)
-        authorflag=0;
-    else if(strcmp(name,"first-name")==0 && authorflag)
-        firstnameflag=0;
-    else if(strcmp(name,"middle-name")==0 && authorflag)
-        middlenameflag=0;
-    else if(strcmp(name,"last-name")==0 && authorflag)
-        lastnameflag=0;
+        data->titleinfoflag=0;
+    else if(strcmp(name,"book-title")==0 && data->titleinfoflag)
+        data->titleflag=0;
+    else if(strcmp(name,"author")==0 && data->titleinfoflag)
+        data->authorflag=0;
+    else if(strcmp(name,"first-name")==0 && data->authorflag)
+        data->firstnameflag=0;
+    else if(strcmp(name,"middle-name")==0 && data->authorflag)
+        data->middlenameflag=0;
+    else if(strcmp(name,"last-name")==0 && data->authorflag)
+        data->lastnameflag=0;
     else if(strcmp(name,"title-info")==0)
-        doneflag=1;
+        data->doneflag=1;
 }
 
 void handlechar(void *userData,const XML_Char *s,int len)
 {
-    if(titleflag==1)
-        str_append(&title, s, len);
-    else if(firstnameflag)
+    data_t *data = userData;
+
+    if(data->titleflag==1)
+        str_append(&data->title, s, len);
+    else if(data->firstnameflag)
     {
-        str_append(&authors->first, s, len);
+        str_append(&data->authors->first, s, len);
     }
-    else if(middlenameflag)
+    else if(data->middlenameflag)
     {
-        str_append(&authors->middle, s, len);
+        str_append(&data->authors->middle, s, len);
     }
-    else if(lastnameflag)
+    else if(data->lastnameflag)
     {
-        str_append(&authors->last, s, len);
+        str_append(&data->authors->last, s, len);
     }
 }
 
@@ -284,22 +276,23 @@ static int unknown_encoding_handler(void* user,
 }
 
 
-static void setup_fb2_parser(XML_Parser myparse)
+static void setup_fb2_parser(XML_Parser myparse, data_t *data)
 {
-    XML_UseParserAsHandlerArg(myparse);
-    XML_SetElementHandler(myparse,handlestart,handleend);
-    XML_SetCharacterDataHandler(myparse,handlechar);
+    XML_SetUserData(myparse, data);
+    XML_SetElementHandler(myparse, handlestart, handleend);
+    XML_SetCharacterDataHandler(myparse, handlechar);
     XML_SetUnknownEncodingHandler(myparse, unknown_encoding_handler, NULL);
 }
 
-static em_keyword_list_t* append_fb2_keywords(em_keyword_list_t* prev)
+static em_keyword_list_t* append_fb2_keywords(em_keyword_list_t* prev,
+                                              data_t* data)
 {
-    if(title.value)
+    if(data->title.value)
     {
-        prev = em_keywords_add(prev, EXTRACTOR_TITLE, title.value);
+        prev = em_keywords_add(prev, EXTRACTOR_TITLE, data->title.value);
     }
 
-    author_t* author = authors;
+    author_t* author = data->authors;
     while(author)
     {
         if(author->first.value || author->middle.value || author->last.value)
@@ -321,14 +314,14 @@ static em_keyword_list_t* append_fb2_keywords(em_keyword_list_t* prev)
         author = author->next;
     }
 
-    if(series.value)
+    if(data->series.value)
     {
-        prev = em_keywords_add(prev, EXTRACTOR_ALBUM, series.value);
+        prev = em_keywords_add(prev, EXTRACTOR_ALBUM, data->series.value);
     }
 
-    if(seq_number.value)
+    if(data->seq_number.value)
     {
-        prev = em_keywords_add(prev, EXTRACTOR_TRACK_NUMBER, seq_number.value);
+        prev = em_keywords_add(prev, EXTRACTOR_TRACK_NUMBER, data->seq_number.value);
     }
 
     return prev;
@@ -340,11 +333,13 @@ em_keyword_list_t* libextractor_fb2_extract(const char* filename,
                                             em_keyword_list_t* prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
-    initvars();
-    setup_fb2_parser(myparse);
+    data_t metadata;
+
+    initdata(&metadata);
+    setup_fb2_parser(myparse, &metadata);
 
     /* Read file in chunks, stopping as soon as necessary */
-    while(!doneflag && size)
+    while(!metadata.doneflag && size)
     {
         size_t part_size = BUF_SIZE < size ? BUF_SIZE : size;
 
@@ -356,15 +351,17 @@ em_keyword_list_t* libextractor_fb2_extract(const char* filename,
     }
 
     prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/x-fictionbook+xml");
-    prev = append_fb2_keywords(prev);
+    prev = append_fb2_keywords(prev, &metadata);
 
 err:
-    freevars();
+    freedata(&metadata);
     XML_ParserFree(myparse);
     return prev;
 }
 
-static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
+static int parse_zipped_fb2(XML_Parser myparse,
+                            const char* filename,
+                            data_t *data)
 {
     struct zip* z;
     struct zip_file* zf;
@@ -378,7 +375,7 @@ static int parse_zipped_fb2(XML_Parser myparse, const char* filename)
     if(!zf)
         goto err2;
 
-    while(!doneflag)
+    while(!data->doneflag)
     {
         char buf[BUF_SIZE];
         int nr = zip_fread(zf, buf, BUF_SIZE);
@@ -410,18 +407,19 @@ em_keyword_list_t* libextractor_fb2_zip_extract(const char* filename,
                                                 em_keyword_list_t* prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
+    data_t metadata;
 
-    initvars();
-    setup_fb2_parser(myparse);
+    initdata(&metadata);
+    setup_fb2_parser(myparse, &metadata);
 
-    if(parse_zipped_fb2(myparse, filename))
+    if(parse_zipped_fb2(myparse, filename, &metadata))
     {
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE,
                            "application/x-zip-compressed-fb2");
-        prev = append_fb2_keywords(prev);
+        prev = append_fb2_keywords(prev, &metadata);
     }
 
-    freevars();
+    freedata(&metadata);
     XML_ParserFree(myparse);
     return prev;
 }
