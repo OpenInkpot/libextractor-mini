@@ -1,3 +1,10 @@
+libextractor-mini (0.2.11) zelazny; urgency=low
+
+  * Fix memory leak in fb2 plugin
+  * epub: don't crash on emppty <dc:creator></dc:creator>
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Sat, 30 Jan 2010 17:12:40 +0600
+
 libextractor-mini (0.2.10) zelazny; urgency=low
 
   * Fix broken depends regarding binNMU.
