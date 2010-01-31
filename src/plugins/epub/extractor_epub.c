@@ -191,7 +191,8 @@ handleend(void *userData, const XML_Char *name)
     const char *dc;
 
     if (data->metadataflag) {
-        if (streq(name, "metadata")) {
+        if (streq(name, "metadata") ||
+            streq(name, "http://www.idpf.org/2007/opf|metadata")) {
             data->doneflag = 1;
             return;
         }
