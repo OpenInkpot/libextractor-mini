@@ -66,8 +66,10 @@ libextractor_pdf_extract(const char *filename,
 
     /* Open file instead of using passed data */
     error = pdf_loadxref(xref, (char*)filename);
-    if (error)
+    if (error) {
+        pdf_closexref(xref);
         return prev;
+    }
 
     error = pdf_decryptxref(xref);
     if (error || xref->crypt) {
