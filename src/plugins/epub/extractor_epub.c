@@ -227,7 +227,7 @@ ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
         const char *filename = NULL;
         const char *type = NULL;
 
-        for(; *atts; ++atts) {
+        for (; *atts; ++atts) {
             if (streq(*atts, "media-type")) {
                 ++atts;
                 type = *atts;
