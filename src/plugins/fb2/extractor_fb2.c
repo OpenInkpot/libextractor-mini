@@ -40,7 +40,7 @@
 
 /* Either NULL or zero-terminated string */
 typedef struct {
-    char* value;
+    char *value;
     size_t len;
 } str_t;
 
@@ -91,7 +91,7 @@ typedef struct data_t_ {
     int doneflag;
 
     /* results */
-    author_t* authors;
+    author_t *authors;
     str_t title;
     str_t series;
     str_t seq_number;
@@ -109,8 +109,7 @@ static void
 free_authors(author_t **authors)
 {
     author_t *author = *authors;
-    while(author)
-    {
+    while (author) {
         author_t *next = author->next;
         str_fini(&author->first);
         str_fini(&author->middle);
@@ -141,11 +140,11 @@ freedata(data_t *data)
 static void
 parse_sequence_info(data_t *data, const XML_Char **atts)
 {
-    for(; *atts; ++atts) {
-        if(streq(*atts, "name")) {
+    for (; *atts; ++atts) {
+        if (streq(*atts, "name")) {
             ++atts;
             str_append(&data->series, *atts, strlen(*atts));
-        } else if(streq(*atts, "number")) {
+        } else if (streq(*atts, "number")) {
             ++atts;
             str_append(&data->seq_number, *atts, strlen(*atts));
         }
@@ -157,7 +156,7 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
     data_t *data = userData;
 
-    if(streq(name, "body"))
+    if (streq(name, "body"))
         data->doneflag = 1;
 
     if (!data->titleinfoflag) {
@@ -183,7 +182,7 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 
     if (streq(name, "book-title"))
         data->titleflag = 1;
-    else if(streq(name, "sequence"))
+    else if (streq(name, "sequence"))
         parse_sequence_info(data, atts);
 }
 
@@ -203,7 +202,7 @@ handleend(void *userData,const XML_Char *name)
         else if (data->lastnameflag && streq(name, "last-name"))
             data->lastnameflag = 0;
         else if (streq(name, "author"))
-            data->authorflag = 0;          
+            data->authorflag = 0;
         return;
     }
 
@@ -233,7 +232,8 @@ handlechar(void *userData, const XML_Char *s,int len)
  * encoding. The easy way to do it is to convert every byte to UTF-32 and then
  * construct Unicode character from 4-byte representation.
  */
-int fill_byte_encoding_table(const char *encoding, XML_Encoding *info)
+static int
+fill_byte_encoding_table(const char *encoding, XML_Encoding *info)
 {
     int i;
 
@@ -241,24 +241,21 @@ int fill_byte_encoding_table(const char *encoding, XML_Encoding *info)
     if (ic == (iconv_t)-1)
         return XML_STATUS_ERROR;
 
-    for (i = 0; i < 256; ++i)
-    {
+    for (i = 0; i < 256; ++i) {
         char from[1] = { i };
         unsigned char to[4];
 
-        char* fromp = from;
-        unsigned char* top = to;
+        char *fromp = from;
+        unsigned char *top = to;
         size_t fromleft = 1;
         size_t toleft = 4;
 
         size_t res = iconv(ic, &fromp, &fromleft, (char **)&top, &toleft);
 
-        if(res == (size_t) -1 && errno == EILSEQ)
-        {
+        if (res == (size_t) -1 && errno == EILSEQ) {
             info->map[i] = -1;
         }
-        else if(res == (size_t) -1)
-        {
+        else if (res == (size_t) -1) {
             iconv_close(ic);
             return XML_STATUS_ERROR;
         }
@@ -270,9 +267,8 @@ int fill_byte_encoding_table(const char *encoding, XML_Encoding *info)
     return XML_STATUS_OK;
 }
 
-static int unknown_encoding_handler(void *user,
-                                    const XML_Char *name,
-                                    XML_Encoding *info)
+static int
+unknown_encoding_handler(void *user, const XML_Char *name, XML_Encoding *info)
 {
     /*
      * Just pretend that all encodings are single-byte :)
@@ -281,7 +277,8 @@ static int unknown_encoding_handler(void *user,
 }
 
 
-static void setup_fb2_parser(XML_Parser myparse, data_t *data)
+static void
+setup_fb2_parser(XML_Parser myparse, data_t *data)
 {
     XML_SetUserData(myparse, data);
     XML_SetElementHandler(myparse, handlestart, handleend);
@@ -289,8 +286,8 @@ static void setup_fb2_parser(XML_Parser myparse, data_t *data)
     XML_SetUnknownEncodingHandler(myparse, unknown_encoding_handler, NULL);
 }
 
-static em_keyword_list_t *append_fb2_keywords(em_keyword_list_t *prev,
-                                              data_t *data)
+static em_keyword_list_t *
+append_fb2_keywords(em_keyword_list_t *prev, data_t *data)
 {
     if (data->title.value) {
         prev = em_keywords_add(prev, EXTRACTOR_TITLE, data->title.value);
@@ -327,10 +324,9 @@ static em_keyword_list_t *append_fb2_keywords(em_keyword_list_t *prev,
     return prev;
 }
 
-em_keyword_list_t *libextractor_fb2_extract(const char *filename,
-                                            char *data,
-                                            size_t size,
-                                            em_keyword_list_t *prev)
+em_keyword_list_t *
+libextractor_fb2_extract(const char *filename, char *data,
+                         size_t size, em_keyword_list_t *prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
     data_t metadata;
@@ -358,9 +354,8 @@ err:
     return prev;
 }
 
-static int parse_zipped_fb2(XML_Parser myparse,
-                            const char *filename,
-                            data_t *data)
+static int
+parse_zipped_fb2(XML_Parser myparse, const char *filename, data_t *data)
 {
     struct zip *z;
     struct zip_file *zf;
@@ -399,10 +394,9 @@ err2:
     return 0;
 }
 
-em_keyword_list_t *libextractor_fb2_zip_extract(const char *filename,
-                                                char *data,
-                                                size_t size,
-                                                em_keyword_list_t *prev)
+em_keyword_list_t *
+libextractor_fb2_zip_extract(const char *filename, char *data,
+                             size_t size, em_keyword_list_t *prev)
 {
     XML_Parser myparse = XML_ParserCreate(NULL);
     data_t metadata;
