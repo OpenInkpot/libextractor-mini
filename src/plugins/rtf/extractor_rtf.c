@@ -70,13 +70,10 @@ detect_utf8(char *data, int len) {
     int seq_rem = 0; /* 0 = First sequence byte, 1 = Second, etc. */
     int i;
     for (i = 0; i < len; i++) {
-        printf("%d %d\n", i ,len);
         char ch = data[i];
-        printf("%d-", ch);
         if (!seq_rem) {
             /* First byte */
             ch = ch >> 4;
-            printf("%d\n", ch);
             switch (ch) {
                 case 12:
                 case 13:
@@ -105,14 +102,12 @@ detect_utf8(char *data, int len) {
             /* Second, third or forth byte
                Valid if 10?? ???? */
             ch = ch >> 6;
-            printf("%d\n", ch);
             if (ch != 2)
                 return false;
             seq_rem--;
         }
     }
     /* Valid if not expecting more bytes */
-    printf("detect as %d\n", seq_rem);
     return (seq_rem == 0);
 }
 
