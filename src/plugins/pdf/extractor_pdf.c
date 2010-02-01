@@ -107,7 +107,7 @@ libextractor_pdf_extract(const char *filename,
                             sscanf(date, "%4d%2d%2d%2d%2d%2d", &year, &month, &day, &hour, &minute, &second);
                             if (asprintf(&date, "%d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second) >= 0)
                                 prev = em_keywords_add(prev, fields[i].extractor_keyword, date);
-
+                            free(date);
                             free(data); /* Free original string */
                             break;
                     }
