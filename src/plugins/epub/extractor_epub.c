@@ -278,13 +278,19 @@ append_epub_keywords(em_keyword_list_t *prev, data_t *data)
 }
 
 static bool
-parse_epub(struct zip *z, data_t *data)
+parse_epub(const char *filename, data_t *data)
 {
     bool success = false;
     struct zip_file *zf;
     char buf[BUF_SIZE];
     int nr;
     XML_Parser myparse;
+    struct zip *z;
+
+    /* libzip does not allow to open zip file from memory. Wink-wink. */
+    z = zip_open(filename, 0, NULL);
+    if (!z)
+        return success;
 
     /* Check it's really an EPUB and not some other zip-based format */
     zf = zip_fopen(z, "mimetype", 0);
@@ -359,16 +365,9 @@ libextractor_epub_extract(const char *filename, char *data,
                           size_t size, em_keyword_list_t *prev)
 {
     data_t metadata;
-    struct zip *z;
-
     initdata(&metadata);
 
-    /* libzip does not allow to open zip file from memory. Wink-wink. */
-    z = zip_open(filename, 0, NULL);
-    if (!z)
-        return prev;
-
-    if (parse_epub(z, &metadata)) {
+    if (parse_epub(filename, &metadata)) {
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE,
                            "application/epub+zip");
         prev = append_epub_keywords(prev, &metadata);
