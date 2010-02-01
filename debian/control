@@ -109,3 +109,12 @@ Description: additional plugins for libextractor
  plugins.
  .
  This plugin fetches metadata from EPUB files.
+
+Package: libextractor-mini-dbg
+Architecture: any
+Section: debug
+Depends: libextractor-mini0 (= ${binary:Version})
+Description: Minimalistic metadata extractor -- debug
+ Library for metadata extraction from various files.
+ .
+ This package contains debugging symbols
