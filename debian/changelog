@@ -1,3 +1,15 @@
+libextractor-mini (0.2.12) zelazny; urgency=low
+
+  * Fix memory leaks in fb2, pdf, rtf extractors.
+  * Make fb2 and epub extractors threadsafe
+  * Fix coding style of epub and fb2 extractors
+  * Make epub handler faster by fixing check of "end of metadata" tag
+  * Fix section of package
+  * Add -dbg packgae
+  * Make extractor tool more useful
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Mon, 01 Feb 2010 20:54:44 +0600
+
 libextractor-mini (0.2.11) zelazny; urgency=low
 
   * Fix memory leak in fb2 plugin
