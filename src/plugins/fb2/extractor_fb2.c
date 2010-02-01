@@ -135,16 +135,14 @@ freedata(data_t *data)
     free_authors(&data->authors);
 }
 
-#define streq(a,b) (strcmp((a),(b)) == 0)
-
 static void
 parse_sequence_info(data_t *data, const XML_Char **atts)
 {
     for (; *atts; ++atts) {
-        if (streq(*atts, "name")) {
+        if (!strcmp(*atts, "name")) {
             ++atts;
             str_append(&data->series, *atts, strlen(*atts));
-        } else if (streq(*atts, "number")) {
+        } else if (!strcmp(*atts, "number")) {
             ++atts;
             str_append(&data->seq_number, *atts, strlen(*atts));
         }
@@ -156,33 +154,33 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
     data_t *data = userData;
 
-    if (streq(name, "body"))
+    if (!strcmp(name, "body"))
         data->doneflag = 1;
 
     if (!data->titleinfoflag) {
-        if (streq(name, "title-info"))
+        if (!strcmp(name, "title-info"))
             data->titleinfoflag = 1;
         return;
     }
 
     if (!data->authorflag) {
-        if (streq(name, "author")) {
+        if (!strcmp(name, "author")) {
             add_author(&data->authors);
             data->authorflag = 1;
         }
     } else /* (data->authorflag) */ {
-        if (streq(name, "first-name"))
+        if (!strcmp(name, "first-name"))
             data->firstnameflag = 1;
-        else if (streq(name, "middle-name"))
+        else if (!strcmp(name, "middle-name"))
             data->middlenameflag = 1;
-        else if (streq(name, "last-name"))
+        else if (!strcmp(name, "last-name"))
             data->lastnameflag = 1;
         return;
     }
 
-    if (streq(name, "book-title"))
+    if (!strcmp(name, "book-title"))
         data->titleflag = 1;
-    else if (streq(name, "sequence"))
+    else if (!strcmp(name, "sequence"))
         parse_sequence_info(data, atts);
 }
 
@@ -195,20 +193,20 @@ handleend(void *userData,const XML_Char *name)
         return;
 
     if (data->authorflag) {
-        if (data->firstnameflag && streq(name, "first-name"))
+        if (data->firstnameflag && !strcmp(name, "first-name"))
             data->firstnameflag = 0;
-        else if (data->middlenameflag && streq(name, "middle-name"))
+        else if (data->middlenameflag && !strcmp(name, "middle-name"))
             data->middlenameflag = 0;
-        else if (data->lastnameflag && streq(name, "last-name"))
+        else if (data->lastnameflag && !strcmp(name, "last-name"))
             data->lastnameflag = 0;
-        else if (streq(name, "author"))
+        else if (!strcmp(name, "author"))
             data->authorflag = 0;
         return;
     }
 
-    if (streq(name, "book-title"))
+    if (!strcmp(name, "book-title"))
         data->titleflag = 0;
-    else if (streq(name, "title-info"))
+    else if (!strcmp(name, "title-info"))
         data->doneflag = 1;
 }
 
