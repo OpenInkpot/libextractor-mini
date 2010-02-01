@@ -124,7 +124,6 @@ freedata(data_t *data)
     free_authors(&data->authors);
 }
 
-#define streq(a,b) (strcmp((a),(b)) == 0)
 #define strstarts(a,start) (strncmp((a),(start), strlen(start)) == 0)
 
 /* Strip dc namespace. dc and dcterms are identical for our purposes */
@@ -155,7 +154,7 @@ dcmatch(const char *name, const char *match)
         name++;
         match++;
     }
-    return streq(name, match);
+    return !strcmp(name, match);
 }
 
 static void
@@ -165,8 +164,8 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
     const char *dc;
 
     /* OEBPS <= 1.2 and OPF 2.0 respectively */
-    if (streq(name, "metadata") ||
-        streq(name, "http://www.idpf.org/2007/opf|metadata")) {
+    if (!strcmp(name, "metadata") ||
+        !strcmp(name, "http://www.idpf.org/2007/opf|metadata")) {
         data->metadataflag = 1;
         return;
     }
@@ -191,8 +190,8 @@ handleend(void *userData, const XML_Char *name)
     const char *dc;
 
     if (data->metadataflag) {
-        if (streq(name, "metadata") ||
-            streq(name, "http://www.idpf.org/2007/opf|metadata")) {
+        if (!strcmp(name, "metadata") ||
+            !strcmp(name, "http://www.idpf.org/2007/opf|metadata")) {
             data->doneflag = 1;
             return;
         }
@@ -223,15 +222,15 @@ ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
     data_t *data = userData;
 
-    if (streq(name, "rootfile")) {
+    if (!strcmp(name, "rootfile")) {
         const char *filename = NULL;
         const char *type = NULL;
 
         for (; *atts; ++atts) {
-            if (streq(*atts, "media-type")) {
+            if (!strcmp(*atts, "media-type")) {
                 ++atts;
                 type = *atts;
-            } else if (streq(*atts, "full-path")) {
+            } else if (!strcmp(*atts, "full-path")) {
                 ++atts;
                 filename = *atts;
             } else {
@@ -239,7 +238,7 @@ ocf_handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
             }
         }
 
-        if (streq(type, "application/oebps-package+xml")) {
+        if (!strcmp(type, "application/oebps-package+xml")) {
             str_append(&data->opf_filename, filename, strlen(filename));
             data->doneflag = 1;
         }
