@@ -211,13 +211,17 @@ parse_tag(char *tag, em_keyword_list_t *prev, int len)
             switch (fields[i].data_type) {
                 case RTF_STRING:
                     /* Return only if UTF-8 (includes ASCII) */
-                    if (detect_utf8(tag+l+1,len-l-1))
-                        prev = em_keywords_add(prev, fields[i].extractor_keyword, strndup(tag+l+1,len-l-1));
+                    if (detect_utf8(tag+l+1,len-l-1)) {
+                        char *s = strndup(tag+l+1,len-l-1);
+                        prev = em_keywords_add(prev, fields[i].extractor_keyword, s);
+                        free(s);
+                    }
                     break;
                 case RTF_DATE:
                     date = parse_date(tag+l);
                     if (date != NULL)
                         prev = em_keywords_add(prev, fields[i].extractor_keyword, date);
+                    free(date);
                     break;
             }
             break;
