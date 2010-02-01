@@ -4,6 +4,7 @@
  * Part of OpenInkpot project (http://openinkpot.org/)
  *
  * (c) 2008 Marc Lajoie <quickhand@openinkpot.org>
+ * (c) 2009 Alan Jenkins <alan-jenkins@tuffmail.co.uk>
  * (c) 2008,2010 Mikhail Gusarov <dottedmag@dottedmag.net>
  *
  * This program is free software; you can redistribute it and/or modify it under
