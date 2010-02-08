@@ -83,13 +83,13 @@ typedef struct author_t_ {
 
 typedef struct data_t_ {
     /* parsing state */
+    XML_Parser parser;
     int authorflag;
     int titleflag;
     int titleinfoflag;
     int firstnameflag;
     int middlenameflag;
     int lastnameflag;
-    int doneflag;
 
     /* results */
     author_t *authors;
@@ -134,6 +134,7 @@ freedata(data_t *data)
     str_fini(&data->series);
     str_fini(&data->seq_number);
     free_authors(&data->authors);
+    XML_ParserFree(data->parser);
 }
 
 static void
@@ -155,8 +156,10 @@ handlestart(void *userData, const XML_Char *name, const XML_Char **atts)
 {
     data_t *data = userData;
 
-    if (!strcmp(name, "body"))
-        data->doneflag = 1;
+    if (!strcmp(name, "body")) {
+        XML_StopParser(data->parser, XML_FALSE);
+        return;
+    }
 
     if (!data->titleinfoflag) {
         if (!strcmp(name, "title-info"))
@@ -207,8 +210,10 @@ handleend(void *userData,const XML_Char *name)
 
     if (!strcmp(name, "book-title"))
         data->titleflag = 0;
-    else if (!strcmp(name, "title-info"))
-        data->doneflag = 1;
+    else if (!strcmp(name, "title-info")) {
+        XML_StopParser(data->parser, XML_FALSE);
+        return;
+    }
 }
 
 static void
@@ -277,12 +282,13 @@ unknown_encoding_handler(void *user, const XML_Char *name, XML_Encoding *info)
 
 
 static void
-setup_fb2_parser(XML_Parser myparse, data_t *data)
+setup_fb2_parser(data_t *data)
 {
-    XML_SetUserData(myparse, data);
-    XML_SetElementHandler(myparse, handlestart, handleend);
-    XML_SetCharacterDataHandler(myparse, handlechar);
-    XML_SetUnknownEncodingHandler(myparse, unknown_encoding_handler, NULL);
+    data->parser = XML_ParserCreate(NULL);
+    XML_SetUserData(data->parser, data);
+    XML_SetElementHandler(data->parser, handlestart, handleend);
+    XML_SetCharacterDataHandler(data->parser, handlechar);
+    XML_SetUnknownEncodingHandler(data->parser, unknown_encoding_handler, NULL);
 }
 
 static em_keyword_list_t *
@@ -327,21 +333,25 @@ em_keyword_list_t *
 libextractor_fb2_extract(const char *filename, char *data,
                          size_t size, em_keyword_list_t *prev)
 {
-    XML_Parser myparse = XML_ParserCreate(NULL);
     data_t metadata;
-
     initdata(&metadata);
-    setup_fb2_parser(myparse, &metadata);
+    setup_fb2_parser(&metadata);
 
     /* Read file in chunks, stopping as soon as necessary */
-    while (!metadata.doneflag && size) {
+    while (size) {
         size_t part_size = BUF_SIZE < size ? BUF_SIZE : size;
 
-        if (XML_Parse(myparse, data, part_size, part_size == size) == XML_STATUS_ERROR)
-            goto err;
+        if (XML_Parse(metadata.parser, data, part_size, part_size == size)
+            == XML_STATUS_OK) {
+            data += part_size;
+            size -= part_size;
+        } else {
+            if (XML_GetErrorCode(metadata.parser) == XML_ERROR_ABORTED)
+                break;
+            else
+                goto err;
+        }
 
-        data += part_size;
-        size -= part_size;
     }
 
     prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE, "application/x-fictionbook+xml");
@@ -349,12 +359,11 @@ libextractor_fb2_extract(const char *filename, char *data,
 
 err:
     freedata(&metadata);
-    XML_ParserFree(myparse);
     return prev;
 }
 
 static int
-parse_zipped_fb2(XML_Parser myparse, const char *filename, data_t *data)
+parse_zipped_fb2(const char *filename, data_t *data)
 {
     struct zip *z;
     struct zip_file *zf;
@@ -368,15 +377,19 @@ parse_zipped_fb2(XML_Parser myparse, const char *filename, data_t *data)
     if (!zf)
         goto err2;
 
-    while (!data->doneflag) {
+    for(;;) {
         char buf[BUF_SIZE];
         int nr = zip_fread(zf, buf, BUF_SIZE);
 
         if (nr == -1)
             goto err1;
 
-        if (XML_Parse(myparse, buf, nr, nr == 0) == XML_STATUS_ERROR)
-            goto err1;
+        if (XML_Parse(data->parser, buf, nr, nr == 0) != XML_STATUS_OK) {
+            if (XML_GetErrorCode(data->parser) == XML_ERROR_ABORTED)
+                break;
+            else
+                goto err1;
+        }
 
         if (nr == 0)
             break;
@@ -397,19 +410,16 @@ em_keyword_list_t *
 libextractor_fb2_zip_extract(const char *filename, char *data,
                              size_t size, em_keyword_list_t *prev)
 {
-    XML_Parser myparse = XML_ParserCreate(NULL);
     data_t metadata;
-
     initdata(&metadata);
-    setup_fb2_parser(myparse, &metadata);
+    setup_fb2_parser(&metadata);
 
-    if (parse_zipped_fb2(myparse, filename, &metadata)) {
+    if (parse_zipped_fb2(filename, &metadata)) {
         prev = em_keywords_add(prev, EXTRACTOR_MIMETYPE,
                            "application/x-zip-compressed-fb2");
         prev = append_fb2_keywords(prev, &metadata);
     }
 
     freedata(&metadata);
-    XML_ParserFree(myparse);
     return prev;
 }
