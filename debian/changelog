@@ -1,3 +1,10 @@
+libextractor-mini (0.2.13) zelazny; urgency=low
+
+  * Fix problem in fb2 parser with document-info title/authors sometimes
+    being parsed as part of title-info
+
+ -- Mikhail Gusarov <dottedmag@dottedmag.net>  Tue, 09 Feb 2010 01:00:36 +0100
+
 libextractor-mini (0.2.12) zelazny; urgency=low
 
   * Fix memory leaks in fb2, pdf, rtf extractors.
