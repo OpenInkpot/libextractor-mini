@@ -22,3 +22,4 @@ stamp-h1
 src/config.h
 *~
 *.loT
+src/config.h.in
