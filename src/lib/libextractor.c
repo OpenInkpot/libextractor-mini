@@ -31,7 +31,7 @@
 
 #include "extractor-mini.h"
 
-#define EXTRACTORS_DIR "/usr/lib/extractor-mini"
+#define EXTRACTORS_DIR LIBDIR"/extractor-mini"
 
 /*
  * Returns full path, not need to be freeed.

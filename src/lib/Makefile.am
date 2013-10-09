@@ -1,4 +1,5 @@
-AM_CFLAGS=-Wall -Werror
+AM_CFLAGS=-Wall -Werror \
+		-DLIBDIR='"$(libdir)"'
 
 lib_LTLIBRARIES = libextractor_mini.la
 
