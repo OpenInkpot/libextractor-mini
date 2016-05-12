@@ -7,6 +7,6 @@ libextractor_epub_la_SOURCES = extractor_epub.c
 libextractor_epub_la_LIBADD = \
 		 ${top_builddir}/src/lib/libextractor_mini.la \
 		@EXPAT_LIBS@ @LIBZIP_LIBS@
-libextractor_epub_la_LDFLAGS = -module -avoid-version
+libextractor_epub_la_LDFLAGS = -module -avoid-version -shared
 
 plugindir = $(libdir)/extractor-mini

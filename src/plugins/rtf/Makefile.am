@@ -6,7 +6,7 @@ plugin_LTLIBRARIES = libextractor_rtf.la
 libextractor_rtf_la_SOURCES = extractor_rtf.c
 libextractor_rtf_la_LIBADD = \
 		 ${top_builddir}/src/lib/libextractor_mini.la
-libextractor_rtf_la_LDFLAGS = -module -avoid-version
+libextractor_rtf_la_LDFLAGS = -module -avoid-version -shared
 
 plugindir = $(libdir)/extractor-mini
 

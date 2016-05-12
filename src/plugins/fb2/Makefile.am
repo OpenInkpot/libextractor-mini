@@ -7,7 +7,7 @@ libextractor_fb2_la_SOURCES = extractor_fb2.c
 libextractor_fb2_la_LIBADD = \
 		 ${top_builddir}/src/lib/libextractor_mini.la \
 		@EXPAT_LIBS@ @LIBZIP_LIBS@
-libextractor_fb2_la_LDFLAGS = -module -avoid-version
+libextractor_fb2_la_LDFLAGS = -module -avoid-version -shared
 
 plugindir = $(libdir)/extractor-mini
 
